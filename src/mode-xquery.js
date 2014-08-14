@@ -3859,7 +3859,6 @@ var AcePopup = function(parentNode) {
     popup.on("changeSelection", function() {
         if (popup.isOpen)
             popup.setRow(popup.selection.lead.row);
-        popup.renderer.scrollCursorIntoView();
     });
 
     popup.hide = function() {

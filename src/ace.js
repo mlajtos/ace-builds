@@ -3021,7 +3021,9 @@ function DragdropHandler(mouseHandler) {
         var vMovement = !prevCursor || cursor.row != prevCursor.row;
         var hMovement = !prevCursor || cursor.column != prevCursor.column;
         if (!cursorMovedTime || vMovement || hMovement) {
+            editor.$blockScrolling += 1;
             editor.moveCursorToPosition(cursor);
+            editor.$blockScrolling -= 1;
             cursorMovedTime = now;
             cursorPointOnCaretMoved = {x: x, y: y};
         } else {
@@ -3095,7 +3097,9 @@ function DragdropHandler(mouseHandler) {
         clearInterval(timerId);
         editor.session.removeMarker(dragSelectionMarker);
         dragSelectionMarker = null;
+        editor.$blockScrolling += 1;
         editor.selection.fromOrientedRange(range);
+        editor.$blockScrolling -= 1;
         if (editor.isFocused() && !isInternal)
             editor.renderer.$cursorLayer.setBlinking(!editor.getReadOnly());
         range = null;
@@ -3445,6 +3449,10 @@ exports.moduleUrl = function(name, component) {
     var sep = component == "snippets" ? "/" : "-";
     
     var base = parts[parts.length - 1];
+    if (component == "worker" && sep == "-") {
+        var re = new RegExp("^" + component + "[\\-_]|[\\-_]" + component + "$", "g");
+        base = base.replace(re, "");
+    }
 
     if (sep == "-") {
         var re = new RegExp("^" + component + "[\\-_]|[\\-_]" + component + "$", "g");
@@ -8554,17 +8562,13 @@ var EditSession = function(text, mode) {
     };
 
     this.$startWorker = function() {
-        if (typeof Worker !== "undefined" && !require.noWorker) {
-            try {
-                this.$worker = this.$mode.createWorker(this);
-            } catch (e) {
-                console.log("Could not load worker");
-                console.log(e);
-                this.$worker = null;
-            }
-        }
-        else
+        try {
+            this.$worker = this.$mode.createWorker(this);
+        } catch (e) {
+            console.log("Could not load worker");
+            console.log(e);
             this.$worker = null;
+        }
     };
     this.getMode = function() {
         return this.$mode;
@@ -10441,14 +10445,12 @@ exports.commands = [{
     bindKey: bindKey("Shift-Up", "Shift-Up"),
     exec: function(editor) { editor.getSelection().selectUp(); },
     multiSelectAction: "forEach",
-    scrollIntoView: "cursor",
     readOnly: true
 }, {
     name: "golineup",
     bindKey: bindKey("Up", "Up|Ctrl-P"),
     exec: function(editor, args) { editor.navigateUp(args.times); },
     multiSelectAction: "forEach",
-    scrollIntoView: "cursor",
     readOnly: true
 }, {
     name: "selecttoend",
@@ -10633,21 +10635,12 @@ exports.commands = [{
     bindKey: bindKey("Ctrl-P", "Ctrl-P"),
     exec: function(editor) { editor.jumpToMatching(); },
     multiSelectAction: "forEach",
-    scrollIntoView: "animate",
     readOnly: true
 }, {
     name: "selecttomatching",
     bindKey: bindKey("Ctrl-Shift-P", "Ctrl-Shift-P"),
     exec: function(editor) { editor.jumpToMatching(true); },
     multiSelectAction: "forEach",
-    scrollIntoView: "animate",
-    readOnly: true
-}, {
-    name: "expandToMatching",
-    bindKey: bindKey("Ctrl-Shift-M", "Ctrl-Shift-M"),
-    exec: function(editor) { editor.jumpToMatching(true, true); },
-    multiSelectAction: "forEach",
-    scrollIntoView: "animate",
     readOnly: true
 }, {
     name: "passKeysToBrowser",
@@ -10703,13 +10696,11 @@ exports.commands = [{
     name: "modifyNumberUp",
     bindKey: bindKey("Ctrl-Shift-Up", "Alt-Shift-Up"),
     exec: function(editor) { editor.modifyNumber(1); },
-    scrollIntoView: "cursor",
     multiSelectAction: "forEach"
 }, {
     name: "modifyNumberDown",
     bindKey: bindKey("Ctrl-Shift-Down", "Alt-Shift-Down"),
     exec: function(editor) { editor.modifyNumber(-1); },
-    scrollIntoView: "cursor",
     multiSelectAction: "forEach"
 }, {
     name: "replace",
@@ -10876,7 +10867,7 @@ exports.commands = [{
         var isBackwards = editor.selection.isBackwards();
         var selectionStart = isBackwards ? editor.selection.getSelectionLead() : editor.selection.getSelectionAnchor();
         var selectionEnd = isBackwards ? editor.selection.getSelectionAnchor() : editor.selection.getSelectionLead();
-        var firstLineEndCol = editor.session.doc.getLine(selectionStart.row).length;
+        var firstLineEndCol = editor.session.doc.getLine(selectionStart.row).length
         var selectedText = editor.session.doc.getTextRange(editor.selection.getRange());
         var selectedCount = selectedText.replace(/\n\s*/, " ").length;
         var insertLine = editor.session.doc.getLine(selectionStart.row);
@@ -10887,7 +10878,7 @@ exports.commands = [{
                 curLine = " " + curLine;
             }
             insertLine += curLine;
-        }
+        };
 
         if (selectionEnd.row + 1 < (editor.session.doc.getLength() - 1)) {
             insertLine += editor.session.doc.getNewLineCharacter();
@@ -10980,6 +10971,7 @@ var Editor = function(renderer, session) {
     this.$mouseHandler = new MouseHandler(this);
     new FoldHandler(this);
 
+    this.$blockScrolling = 0;
     this.$search = new Search().set({
         wrap: true
     });
@@ -11081,6 +11073,7 @@ var Editor = function(renderer, session) {
         if (this.curOp) {
             var command = this.curOp.command;
             if (command && command.scrollIntoView) {
+                this.$blockScrolling--;
                 switch (command.scrollIntoView) {
                     case "center":
                         this.renderer.scrollCursorIntoView(null, 0.5);
@@ -11239,7 +11232,9 @@ var Editor = function(renderer, session) {
     
             this.onChangeMode();
     
+            this.$blockScrolling += 1;
             this.onCursorChange();
+            this.$blockScrolling -= 1;
     
             this.onScrollTopChange();
             this.onScrollLeftChange();
@@ -11470,6 +11465,10 @@ var Editor = function(renderer, session) {
     this.onCursorChange = function() {
         this.$cursorChange();
 
+        if (!this.$blockScrolling) {
+            this.renderer.scrollCursorIntoView();
+        }
+
         this.$highlightBrackets();
         this.$highlightTags();
         this.$updateHighlightActiveLine();
@@ -11609,28 +11608,9 @@ var Editor = function(renderer, session) {
     this.onPaste = function(text) {
         if (this.$readOnly)
             return;
-
         var e = {text: text};
         this._signal("paste", e);
-        text = e.text;
-        if (!this.inMultiSelectMode || this.inVirtualSelectionMode) {
-            this.insert(text);
-        } else {
-            var lines = text.split(/\r\n|\r|\n/);
-            var ranges = this.selection.rangeList.ranges;
-    
-            if (lines.length > ranges.length || lines.length < 2 || !lines[1])
-                return this.commands.exec("insertstring", this, text);
-    
-            for (var i = ranges.length; i--;) {
-                var range = ranges[i];
-                if (!range.isEmpty())
-                    this.session.remove(range);
-    
-                this.session.insert(range.start, lines[i]);
-            }
-        }
-        this.renderer.scrollCursorIntoView();
+        this.insert(e.text, true);
     };
 
 
@@ -12204,6 +12184,7 @@ var Editor = function(renderer, session) {
         var config = this.renderer.layerConfig;
         var rows = dir * Math.floor(config.height / config.lineHeight);
 
+        this.$blockScrolling++;
         if (select === true) {
             this.selection.$moveSelection(function(){
                 this.moveCursorBy(rows, 0);
@@ -12212,6 +12193,7 @@ var Editor = function(renderer, session) {
             this.selection.moveCursorBy(rows, 0);
             this.selection.clearSelection();
         }
+        this.$blockScrolling--;
 
         var scrollTop = renderer.scrollTop;
 
@@ -12263,7 +12245,9 @@ var Editor = function(renderer, session) {
         return this.selection.getRange();
     };
     this.selectAll = function() {
+        this.$blockScrolling += 1;
         this.selection.selectAll();
+        this.$blockScrolling -= 1;
     };
     this.clearSelection = function() {
         this.selection.clearSelection();
@@ -12431,8 +12415,11 @@ var Editor = function(renderer, session) {
     this.gotoLine = function(lineNumber, column, animate) {
         this.selection.clearSelection();
         this.session.unfold({row: lineNumber - 1, column: column || 0});
+
+        this.$blockScrolling += 1;
         this.exitMultiSelectMode && this.exitMultiSelectMode();
         this.moveCursorTo(lineNumber - 1, column || 0);
+        this.$blockScrolling -= 1;
 
         if (!this.isRowFullyVisible(lineNumber - 1))
             this.scrollToLine(lineNumber - 1, true, animate);
@@ -12535,6 +12522,7 @@ var Editor = function(renderer, session) {
         if (!ranges.length)
             return replaced;
 
+        this.$blockScrolling += 1;
 
         var selection = this.getSelectionRange();
         this.selection.moveTo(0, 0);
@@ -12546,6 +12534,7 @@ var Editor = function(renderer, session) {
         }
 
         this.selection.setSelectionRange(selection);
+        this.$blockScrolling -= 1;
 
         return replaced;
     };
@@ -12608,8 +12597,10 @@ var Editor = function(renderer, session) {
     };
 
     this.revealRange = function(range, animate) {
+        this.$blockScrolling += 1;
         this.session.unfold(range);
         this.selection.setSelectionRange(range);
+        this.$blockScrolling -= 1;
 
         var scrollTop = this.renderer.scrollTop;
         this.renderer.scrollSelectionIntoView(range.start, range.end, 0.5);
@@ -12617,11 +12608,15 @@ var Editor = function(renderer, session) {
             this.renderer.animateScrolling(scrollTop);
     };
     this.undo = function() {
+        this.$blockScrolling++;
         this.session.getUndoManager().undo();
+        this.$blockScrolling--;
         this.renderer.scrollCursorIntoView(null, 0.5);
     };
     this.redo = function() {
+        this.$blockScrolling++;
         this.session.getUndoManager().redo();
+        this.$blockScrolling--;
         this.renderer.scrollCursorIntoView(null, 0.5);
     };
     this.destroy = function() {
@@ -16420,6 +16415,7 @@ function onMouseDown(e) {
         var oldRange = selection.rangeList.rangeAtPoint(pos);
         
         
+        editor.$blockScrolling++;
         editor.inVirtualSelectionMode = true;
         
         if (shift) {
@@ -16441,6 +16437,7 @@ function onMouseDown(e) {
                 }
                 selection.addRange(tmpSel);
             }
+            editor.$blockScrolling--;
             editor.inVirtualSelectionMode = false;
         });
 
@@ -16487,6 +16484,7 @@ function onMouseDown(e) {
             editor.removeSelectionMarkers(rectSel);
             if (!rectSel.length)
                 rectSel = [selection.toOrientedRange()];
+            editor.$blockScrolling++;
             if (initialRange) {
                 editor.removeSelectionMarker(initialRange);
                 selection.toSingleRange(initialRange);
@@ -16495,6 +16493,7 @@ function onMouseDown(e) {
                 selection.addRange(rectSel[i]);
             editor.inVirtualSelectionMode = false;
             editor.$mouseHandler.$clickSelection = null;
+            editor.$blockScrolling--;
         };
 
         var onSelectionInterval = blockSelect;
@@ -16516,49 +16515,41 @@ exports.defaultCommands = [{
     name: "addCursorAbove",
     exec: function(editor) { editor.selectMoreLines(-1); },
     bindKey: {win: "Ctrl-Alt-Up", mac: "Ctrl-Alt-Up"},
-    scrollIntoView: "cursor",
     readonly: true
 }, {
     name: "addCursorBelow",
     exec: function(editor) { editor.selectMoreLines(1); },
     bindKey: {win: "Ctrl-Alt-Down", mac: "Ctrl-Alt-Down"},
-    scrollIntoView: "cursor",
     readonly: true
 }, {
     name: "addCursorAboveSkipCurrent",
     exec: function(editor) { editor.selectMoreLines(-1, true); },
     bindKey: {win: "Ctrl-Alt-Shift-Up", mac: "Ctrl-Alt-Shift-Up"},
-    scrollIntoView: "cursor",
     readonly: true
 }, {
     name: "addCursorBelowSkipCurrent",
     exec: function(editor) { editor.selectMoreLines(1, true); },
     bindKey: {win: "Ctrl-Alt-Shift-Down", mac: "Ctrl-Alt-Shift-Down"},
-    scrollIntoView: "cursor",
     readonly: true
 }, {
     name: "selectMoreBefore",
     exec: function(editor) { editor.selectMore(-1); },
     bindKey: {win: "Ctrl-Alt-Left", mac: "Ctrl-Alt-Left"},
-    scrollIntoView: "cursor",
     readonly: true
 }, {
     name: "selectMoreAfter",
     exec: function(editor) { editor.selectMore(1); },
     bindKey: {win: "Ctrl-Alt-Right", mac: "Ctrl-Alt-Right"},
-    scrollIntoView: "cursor",
     readonly: true
 }, {
     name: "selectNextBefore",
     exec: function(editor) { editor.selectMore(-1, true); },
     bindKey: {win: "Ctrl-Alt-Shift-Left", mac: "Ctrl-Alt-Shift-Left"},
-    scrollIntoView: "cursor",
     readonly: true
 }, {
     name: "selectNextAfter",
     exec: function(editor) { editor.selectMore(1, true); },
     bindKey: {win: "Ctrl-Alt-Shift-Right", mac: "Ctrl-Alt-Shift-Right"},
-    scrollIntoView: "cursor",
     readonly: true
 }, {
     name: "splitIntoLines",
@@ -16568,20 +16559,17 @@ exports.defaultCommands = [{
 }, {
     name: "alignCursors",
     exec: function(editor) { editor.alignCursors(); },
-    bindKey: {win: "Ctrl-Alt-A", mac: "Ctrl-Alt-A"},
-    scrollIntoView: "cursor"
+    bindKey: {win: "Ctrl-Alt-A", mac: "Ctrl-Alt-A"}
 }, {
     name: "findAll",
     exec: function(editor) { editor.findAll(); },
     bindKey: {win: "Ctrl-Alt-K", mac: "Ctrl-Alt-G"},
-    scrollIntoView: "cursor",
     readonly: true
 }];
 exports.multiSelectCommands = [{
     name: "singleSelection",
     bindKey: "esc",
     exec: function(editor) { editor.exitMultiSelectMode(); },
-    scrollIntoView: "cursor",
     readonly: true,
     isAvailable: function(editor) {return editor && editor.inMultiSelectMode}
 }];
@@ -17026,6 +17014,31 @@ var Editor = require("./editor").Editor;
                 this.multiSelect.toSingleRange(this.multiSelect.toOrientedRange());
         }
     };
+    this.onPaste = function(text) {
+        if (this.$readOnly)
+            return;
+
+
+        var e = {text: text};
+        this._signal("paste", e);
+        text = e.text;
+        if (!this.inMultiSelectMode || this.inVirtualSelectionMode)
+            return this.insert(text);
+
+        var lines = text.split(/\r\n|\r|\n/);
+        var ranges = this.selection.rangeList.ranges;
+
+        if (lines.length > ranges.length || lines.length < 2 || !lines[1])
+            return this.commands.exec("insertstring", this, text);
+
+        for (var i = ranges.length; i--;) {
+            var range = ranges[i];
+            if (!range.isEmpty())
+                this.session.remove(range);
+
+            this.session.insert(range.start, lines[i]);
+        }
+    };
     this.findAll = function(needle, options, additive) {
         options = options || {};
         options.needle = needle || options.needle;
@@ -17041,6 +17054,7 @@ var Editor = require("./editor").Editor;
         if (!ranges.length)
             return 0;
 
+        this.$blockScrolling += 1;
         var selection = this.multiSelect;
 
         if (!additive)
@@ -17051,6 +17065,8 @@ var Editor = require("./editor").Editor;
         if (range && selection.rangeList.rangeAtPoint(range.start))
             selection.addRange(range, true);
         
+        this.$blockScrolling -= 1;
+
         return ranges.length;
     };
     this.selectMoreLines = function(dir, skip) {
@@ -17143,8 +17159,10 @@ var Editor = require("./editor").Editor;
         var newRange = find(session, needle, dir);
         if (newRange) {
             newRange.cursor = dir == -1 ? newRange.start : newRange.end;
+            this.$blockScrolling += 1;
             this.session.unfold(newRange);
             this.multiSelect.addRange(newRange);
+            this.$blockScrolling -= 1;
             this.renderer.scrollCursorIntoView(null, 0.5);
         }
         if (skip)
@@ -18108,6 +18126,7 @@ exports.edit = function(el) {
     event.addListener(window, "resize", env.onResize);
     editor.on("destroy", function() {
         event.removeListener(window, "resize", env.onResize);
+        env.editor.container.env = null; // prevent memory leak on old ie
     });
     editor.container.env = editor.env = env;
     return editor;
