@@ -14233,7 +14233,7 @@ var FontMetrics = exports.FontMetrics = function(parentEl, interval) {
         document.documentElement.appendChild(el);
         var w = el.getBoundingClientRect().width;
         if (w > 0 && w < 1)
-            CHAR_COUNT = 1;
+            CHAR_COUNT = 50;
         else
             CHAR_COUNT = 100;
         el.parentNode.removeChild(el);
@@ -14286,7 +14286,7 @@ var FontMetrics = exports.FontMetrics = function(parentEl, interval) {
     };
 
     this.$measureSizes = function() {
-        if (CHAR_COUNT === 1) {
+        if (CHAR_COUNT === 50) {
             var rect = null;
             try { 
                rect = this.$measureNode.getBoundingClientRect();
@@ -14295,7 +14295,7 @@ var FontMetrics = exports.FontMetrics = function(parentEl, interval) {
             };
             var size = {
                 height: rect.height,
-                width: rect.width
+                width: rect.width / CHAR_COUNT
             };
         } else {
             var size = {
@@ -15252,9 +15252,12 @@ var VirtualRenderer = function(container, theme) {
         ) {
             changes |= this.$computeLayerConfig();
             if (config.firstRow != this.layerConfig.firstRow && config.firstRowScreen == this.layerConfig.firstRowScreen) {
-                this.scrollTop = this.scrollTop + (config.firstRow - this.layerConfig.firstRow) * this.lineHeight;
-                changes = changes | this.CHANGE_SCROLL;
-                changes |= this.$computeLayerConfig();
+                var st = this.scrollTop + (config.firstRow - this.layerConfig.firstRow) * this.lineHeight;
+                if (st > 0) {
+                    this.scrollTop = st;
+                    changes = changes | this.CHANGE_SCROLL;
+                    changes |= this.$computeLayerConfig();
+                }
             }
             config = this.layerConfig;
             this.$updateScrollBarV();
