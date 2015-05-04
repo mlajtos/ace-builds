@@ -4,11 +4,11 @@ exports.isDark = true;
 exports.cssClass = "ace-cobalt";
 exports.cssText = ".ace-cobalt .ace_gutter {\
 background: #011e3a;\
-color: #fff\
+color: rgb(128,145,160)\
 }\
 .ace-cobalt .ace_print-margin {\
 width: 1px;\
-background: #011e3a\
+background: #555555\
 }\
 .ace-cobalt {\
 background-color: #002240;\
@@ -106,7 +106,8 @@ color: #9EFFFF\
 }\
 .ace-cobalt .ace_indent-guide {\
 background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAEklEQVQImWNgYGBgYHCLSvkPAAP3AgSDTRd4AAAAAElFTkSuQmCC) right repeat-y\
-}";
+}\
+";
 
 var dom = require("../lib/dom");
 dom.importCssString(exports.cssText, exports.cssClass);
