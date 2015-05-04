@@ -77,6 +77,9 @@ var BxlHighlightRules = function() {
 			regex : "'{3}",
 			next  : "start"
 		}, {
+			token : "interpolated",
+			regex : "%%.*%%"
+		}, {
             defaultToken : "string"
         }]
 	};
