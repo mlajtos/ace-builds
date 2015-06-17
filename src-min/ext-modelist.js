@@ -43,9 +43,13 @@ var supportedModes = {
     Assembly_x86:["asm"],
     AutoHotKey:  ["ahk"],
     BatchFile:   ["bat|cmd"],
+<<<<<<< HEAD
     BXL          ["bxl"],
     C9Search:    ["c9search_results"],
+=======
+>>>>>>> upstream/master
     C_Cpp:       ["cpp|c|cc|cxx|h|hh|hpp"],
+    C9Search:    ["c9search_results"],
     Cirru:       ["cirru|cr"],
     Clojure:     ["clj|cljs"],
     Cobol:       ["CBL|COB"],
@@ -106,6 +110,7 @@ var supportedModes = {
     Markdown:    ["md|markdown"],
     Mask:        ["mask"],
     MATLAB:      ["matlab"],
+    Maze:        ["mz"],
     MEL:         ["mel"],
     MUSHCode:    ["mc|mush"],
     MySQL:       ["mysql"],
