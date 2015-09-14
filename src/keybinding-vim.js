@@ -117,13 +117,6 @@ define("ace/keyboard/vim",["require","exports","module","ace/range","ace/lib/eve
     return this.ace.inVirtualSelectionMode && this.ace.selection.index;
   };
   this.onChange = function(delta) {
-    var oldDelta = delta.data;
-    delta = {
-      start: oldDelta.range.start,
-      end: oldDelta.range.end,
-      action: oldDelta.action,
-      lines: oldDelta.lines || [oldDelta.text]
-    };// v1.2 api compatibility
     if (delta.action[0] == 'i') {
       var change = { text: delta.lines };
       var curOp = this.curOp = this.curOp || {};
@@ -515,7 +508,6 @@ define("ace/keyboard/vim",["require","exports","module","ace/range","ace/lib/eve
         highlight.session = null;
       };
       highlight.updateOnChange = function(delta) {
-        delta = delta.data.range;// v1.2 api compatibility
         var row = delta.start.row;
         if (row == delta.end.row) highlight.cache[row] = undefined;
         else highlight.cache.splice(row, highlight.cache.length);

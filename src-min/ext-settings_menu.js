@@ -99,11 +99,8 @@ var supportedModes = {
     Assembly_x86:["asm"],
     AutoHotKey:  ["ahk"],
     BatchFile:   ["bat|cmd"],
-<<<<<<< HEAD
     BXL          ["bxl"],
     C9Search:    ["c9search_results"],
-=======
->>>>>>> upstream/master
     C_Cpp:       ["cpp|c|cc|cxx|h|hh|hpp"],
     C9Search:    ["c9search_results"],
     Cirru:       ["cirru|cr"],
@@ -203,12 +200,13 @@ var supportedModes = {
     SQLServer:   ["sqlserver"],
     Stylus:      ["styl|stylus"],
     SVG:         ["svg"],
+    Swift:       ["swift"],
     Tcl:         ["tcl"],
     Tex:         ["tex"],
     Text:        ["txt"],
     Textile:     ["textile"],
     Toml:        ["toml"],
-    Twig:        ["twig"],
+    Twig:        ["twig|swig"],
     Typescript:  ["ts|typescript|str"],
     Vala:        ["vala"],
     VBScript:    ["vbs|vb"],
@@ -423,7 +421,7 @@ module.exports.generateSettingsMenu = function generateSettingsMenu (editor) {
         });
         
         var el = topmenu.appendChild(document.createElement('div'));
-        var version = "1.1.9";
+        var version = "1.2.0";
         el.style.padding = "1em";
         el.textContent = "Ace version " + version;
         

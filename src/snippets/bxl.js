@@ -384,6 +384,18 @@ snippet str.startsWith\n\
 		/prefix= ${2};\n\
 	};\n\
 \n\
+# server agent\n\
+\n\
+snippet server.getParam\n\
+	server.getParam(${1});\n\
+\n\
+snippet server.session\n\
+	server.session{\n\
+		/context[${1:in/urlContext}] = null;\n\
+		/operation = \"${2:read}\";\n\
+		/tree = ${3:tmp/tree};\n\
+	};\n\
+\n\
 # if else\n\
 snippet if\n\
 	if (${1:true}) {\n\

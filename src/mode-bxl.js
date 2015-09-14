@@ -7,32 +7,43 @@ var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 var BxlHighlightRules = function() {
 
 	var keywords = "this|super|root|forkey|forval"
-	var controlKeywords = "if|else|while|for|break|continue|return"
+	var controlKeywords = "if|else|do|while|for|break|continue|switch|case|default|return"
 	var trees = "loc|in|out|cfg|data|env|tmp|throw|try|catch|finally"
-	var types = "bool|int|float"
+	var types = "bool|int|float|double|string|date|time|dateTime|path"
+    var support_functions = "log|warning|error|info|java|compile|exec|stack|trace" 
+	
+	var docRegex = "\\b(?:TODO|FIXME|XXX|HACK|BUG|BARLA)\\b"
+	var urlRegex = /https?:\/\/[^\s]+/
 
 	var keywordMapper = this.createKeywordMapper({
         "keyword": keywords,
         "keyword.control": controlKeywords,
         "variable.language": trees,
-        "support.function": types
+        "support.function": support_functions,
+        "storage.type": types
     }, "identifier.XXX");
 
 	this.$rules = {
 	    "start": [ {
-			token : "comment.line", // single line comment
-			regex : "\\/\\/.*$"
+			token : "comment.line",
+			regex : "\\/\\/",
+			next  : "singlelineComment"
         }, {
-			token : "comment.block", // multi line comment
+			token : "comment.block",
 			regex : "\\/\\*",
 			next : "multilineComment"
 		}, {
-			token : "string", // triple
-			regex : "'{3}",
-			next  : "multilineString"
+			token : "string.triple",
+			regex : "'''",
+			next  : "tripleQuotedString"
 		}, {
-			token : "string.double", // double
-			regex : '["](?:(?:\\\\.)|(?:[^"\\\\]))*?["]'
+			token : "string.single",
+			regex : '[\']',
+			next  : "singleQuotedString"
+		}, {
+		    token : "string.double",
+		    regex : '"',
+		    next  : "doubleQuotedString"
 		}, {
 			token : "constant.numeric", // number
 			regex : "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?(L|l|F|f|D|d)?\\b"
@@ -45,13 +56,13 @@ var BxlHighlightRules = function() {
 		},{
 			token : "identifier.tree", // tree paths // language.variable
 			regex : "(/[\\w]+)"
-		}, {
+		}, /*{
 			token : "support.function.module", // module operation call
 			regex : "(\\$\\w+\\.\\w+)"
-		}, /*{
+		}, */{
 			token : "support.function.agent", // module operation call
-			regex : "(\\w+\\.)?(\\w+)"
-		},*/ {
+			regex : "(\\w+\\.)(\\w+)"
+		}, {
 			token : keywordMapper,
 			regex : "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
 		}, {
@@ -65,22 +76,66 @@ var BxlHighlightRules = function() {
 			regex : "[\\])}]"
 		}],
 		"multilineComment" : [ {
-			token : "comment", // closing comment
+			token : "comment",
 			regex : ".*?\\*\\/",
 			next : "start"
 		}, {
-			token : "comment", // comment spanning whole line
-			regex : ".+"
+		    token : "invalid.illegal",
+            regex : docRegex
+		}, {
+		    token: "comment.markup.underline.link",
+		    regex : urlRegex
+		}, {
+			defaultToken : "comment"
 		}],
-		"multilineString"  : [{
-			token : "string",
-			regex : "'{3}",
+		"singlelineComment": [{
+		    token : "",
+		    regex : "^",
+		    next  : "start"
+		}, {
+		    token : "invalid.illegal",
+            regex : docRegex
+		}, {
+		    token: "comment.markup.underline.link",
+		    regex : urlRegex
+		}, {
+		    defaultToken: "comment.line"
+		}],
+		"singleQuotedString" : [{
+			token : "variable.parameter",
+			regex : "%%.*?%%"
+		}, {
+			token : "string.escaped",
+			regex : "[\\\\]."
+		}, {
+			token : "string.single",
+			regex : '[\']',
+			next  : "start"
+		}, {
+			defaultToken : "string.single"
+		}],
+		"doubleQuotedString": [{
+		    token : "variable.parameter",
+			regex : "%%.*?%%"
+		}, {
+			token : "string.escaped",
+			regex : "[\\\\]."
+		}, {
+			token : "string.double",
+			regex : '["]',
+			next  : "start"
+		}, {
+			defaultToken : "string.double"
+		}],
+		"tripleQuotedString"  : [{
+			token : "string.triple",
+			regex : "'''",
 			next  : "start"
 		}, {
 			token : "variable.parameter",
-			regex : "%%.*%%"
+			regex : "%%.*?%%"
 		}, {
-            defaultToken : "string"
+            defaultToken : "string.triple"
         }]
 	};
 
@@ -332,8 +387,8 @@ var CstyleBehaviour = function() {
                 if (leftChar == "\\" && token && /escape/.test(token.type))
                     return null;
                 
-                var stringBefore = token && /string/.test(token.type);
-                var stringAfter = !rightToken || /string/.test(rightToken.type);
+                var stringBefore = token && /string|escape/.test(token.type);
+                var stringAfter = !rightToken || /string|escape/.test(rightToken.type);
                 
                 var pair;
                 if (rightChar == quote) {
