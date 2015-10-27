@@ -6,6 +6,12 @@ background: #f0f0f0;\
 border-right: 1px solid #eee;\
 color: #8F908A;\
 }\
+.ace-bxl.ace_editor{\
+border: 1px solid lightgray;\
+border-radius: 4px;\
+background-color: white;\
+margin-bottom: 1em;\
+}\
 .ace-bxl .ace_cursor {\
 color: #666666;\
 }\
@@ -69,8 +75,15 @@ color: blue;\
 color: #007F00;\
 }\
 .ace-bxl .ace_indent-guide {\
-background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAEklEQVQImWPQ0FD0ZXBzd/wPAAjVAoxeSgrfdgNeAAAAAElFTkSuQmCC) right repeat-y\
-}";
+border-right: 1px solid lightgray;\
+margin-right: -1px; \
+}\
+.ace_variable.ace_language.ace_invalid.ace_illegal {\
+text-decoration: line-through;\
+color: red;\
+background-color: inherit;\
+}\
+";
 
 var dom = require("../lib/dom");
 dom.importCssString(exports.cssText, exports.cssClass);

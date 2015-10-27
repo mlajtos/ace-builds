@@ -277,46 +277,46 @@ snippet tree.keyInsert\n\
 # str agent\n\
 \n\
 snippet str.base64decode\n\
-	str.base64decode(${1})\n\
+	str.base64decode(${1:\"QlhM\"})\n\
 \n\
 snippet str.base64encode\n\
-	str.base64encode(${1})\n\
+	str.base64encode(${1:\"Hello World!\"})\n\
 \n\
 snippet str.contains\n\
 	str.contains{\n\
-		/string = ${1};\n\
-		/substring = ${2};\n\
+		/string = ${1:\"hello world\"};\n\
+		/substring = ${2:\"ello\"};\n\
 		/ignoreCase = true;\n\
 	};\n\
 \n\
 snippet str.endsWith\n\
 	str.endsWith{\n\
-		/string = ${1};\n\
-		/suffix= ${2};\n\
+		/string = ${1:\"Hello\"};\n\
+		/suffix= ${2:\"lo\"};\n\
 	};\n\
 \n\
 snippet str.extractDiacritics\n\
-	str.extractDiacritics(${1});\n\
+	str.extractDiacritics(${1:\"héľĺó wôřlď\"});\n\
 \n\
 snippet str.format\n\
 	str.format{\n\
 		/string = ${1};\n\
-		/params = {\n\
+		/params{\n\
 			${2}\n\
-	 	};\n\
-	 };\n\
+		};\n\
+	};\n\
 \n\
 snippet str.find\n\
 	str.find{ \n\
-		/string =  ${1}; \n\
-		/regex = ${2}; \n\
+		/string = ${1:\"hello world\"}; \n\
+		/regex = ${2:\"[a-z]\"}; \n\
 	};\n\
 \n\
 snippet str.hashMD5\n\
-	str.hashMD5(${1});\n\
+	str.hashMD5(${1:\"Hello World\"});\n\
 \n\
 snippet str.hashSHA1\n\
-	str.hashSHA1(${1});\n\
+	str.hashSHA1(${1:\"Hello World\"});\n\
 \n\
 snippet str.htmlEncode\n\
 	str.htmlEncode(${1});\n\
@@ -331,7 +331,7 @@ snippet str.join\n\
 	};\n\
 \n\
 snippet str.length\n\
-	str.length(${1});\n\
+	str.length(${1:\"Hello World\"});\n\
 \n\
 snippet str.justify\n\
 	str.justify{\n\
@@ -343,45 +343,45 @@ snippet str.justify\n\
 \n\
 snippet str.replace\n\
 	str.replace{\n\
-		/string = ${1};\n\
-		/regex = ${3};\n\
-		/replacement = ${2};\n\
+		/string = ${1:\"Hello World\"};\n\
+		/regex = ${3:\"World\"};\n\
+		/replacement = ${2:\"BXL\"};\n\
 	};\n\
 \n\
 snippet str.split\n\
 	str.split{\n\
-		/string = ${1};\n\
-		/regex = ${2};\n\
+		/string = ${1:\"Hello World\"};\n\
+		/regex = ${2:\" \"};\n\
 	};\n\
 \n\
 snippet str.replaceParams\n\
 	str.replaceParams{\n\
-		/string = ${1};\n\
+		/string = ${1:\"Hello %%param%%\"};\n\
 		/params{\n\
-			${2}\n\
+			/${2:param} = ${3:\"world\"};\n\
 		};\n\
 	};\n\
 \n\
 snippet str.substring\n\
 	str.substring{\n\
-		/string = ${1};\n\
-		/beginIndex = ${2};\n\
-		/endIndex = ${3};\n\
+		/string = ${1:\"Hello World\"};\n\
+		/beginIndex = ${2:0};\n\
+		/endIndex = ${3:4};\n\
 	};\n\
 \n\
 snippet str.toLowerCase\n\
-	str.toLowerCase(${1});\n\
+	str.toLowerCase(${1:\"HELLO WORLD\"});\n\
 \n\
 snippet str.toUpperCase\n\
-	str.toUpperCase(${1});\n\
+	str.toUpperCase(${1:\"hello world\"});\n\
 \n\
 snippet str.trim\n\
-	str.trim(${1});\n\
+	str.trim(${1:\"   hello world   \"});\n\
 \n\
 snippet str.startsWith\n\
 	str.startsWith{\n\
-		/string = ${1};\n\
-		/prefix= ${2};\n\
+		/string = ${1:\"Hello World\"};\n\
+		/prefix= ${2:\"Hell\"};\n\
 	};\n\
 \n\
 # server agent\n\

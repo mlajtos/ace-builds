@@ -6,21 +6,19 @@ var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
 var BxlHighlightRules = function() {
 
-	var keywords = "this|super|root|forkey|forval"
-	var controlKeywords = "if|else|do|while|for|break|continue|switch|case|default|return"
-	var trees = "loc|in|out|cfg|data|env|tmp|throw|try|catch|finally"
-	var types = "bool|int|float|double|string|date|time|dateTime|path"
-    var support_functions = "log|warning|error|info|java|compile|exec|stack|trace" 
-	
-	var docRegex = "\\b(?:TODO|FIXME|XXX|HACK|BUG|BARLA)\\b"
-	var urlRegex = /https?:\/\/[^\s]+/
+
+	var docRegex = "\\b(?:WARNING|TODO|FIXME|XXX|HACK|BUG|BARLA)\\b";
+	var urlRegex = /https?:\/\/[^\s]+/;
 
 	var keywordMapper = this.createKeywordMapper({
-        "keyword": keywords,
-        "keyword.control": controlKeywords,
-        "variable.language": trees,
-        "support.function": support_functions,
-        "storage.type": types
+        "keyword": "this|super|root|forkey|forval",
+        "keyword.control": "if|else|do|while|for|break|continue|switch|case|default|return",
+        "variable.language": "loc|in|out|cfg|data|tmp|__init__|throw|try|catch|finally",
+        "variable.language.invalid.illegal": "env",
+        "support.function": "log|warning|error|info|java|compile|exec|stack|trace",
+        "storage.type.support.function": "bool|int|float|double|string|date|time|dateTime|path",
+        "constant.language": "null|empty",
+        "constant.language.boolean": "true|false",
     }, "identifier.XXX");
 
 	this.$rules = {
@@ -46,34 +44,29 @@ var BxlHighlightRules = function() {
 		    next  : "doubleQuotedString"
 		}, {
 			token : "constant.numeric", // number
-			regex : "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?(L|l|F|f|D|d)?\\b"
+			regex : "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?(L|l|F|f|D|d|bd|BD)?\\b"
 		}, {
-			token : "constant.language.boolean", // boolean
-			regex : "(?:true|false)\\b"
-		}, {
-			token : "constant.language", // null and empty tree
-			regex : "(?:null|empty)\\b"
-		},{
 			token : "identifier.tree", // tree paths // language.variable
 			regex : "(/[\\w]+)"
-		}, /*{
+		}, {
 			token : "support.function.module", // module operation call
-			regex : "(\\$\\w+\\.\\w+)"
-		}, */{
+			regex : "(\\$)",
+			next  : "operationCall"
+		}, {
 			token : "support.function.agent", // module operation call
 			regex : "(\\w+\\.)(\\w+)"
 		}, {
-			token : keywordMapper,
-			regex : "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
-		}, {
-			token : "keyword.operator", // TODO precistit
-			regex : "!|\\$|%|&|\/|\\*|\\-\\-|\\-|\\+\\+|\\+|\\.|~|===|==|=|!=|!==|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\\|\\||\\?\\:|\\*=|%=|\\+=|\\-=|&=|\\^="
+			token : "keyword.operator",
+			regex : "=\\[\\]|!|%|\/|\\*|\\-|\\+|\\.|&|~|\\^|<<|>>|==|=|!=|<=|>=|>|<|&&|\\|\\||\\?|\\:"
 		}, {
 			token : "lparen",
 			regex : "[[({]"
 		}, {
 			token : "rparen",
 			regex : "[\\])}]"
+		}, {
+			token : keywordMapper,
+			regex : "[a-zA-Z_][a-zA-Z0-9_]*\\b"
 		}],
 		"multilineComment" : [ {
 			token : "comment",
@@ -136,10 +129,25 @@ var BxlHighlightRules = function() {
 			regex : "%%.*?%%"
 		}, {
             defaultToken : "string.triple"
+        }],
+        "operationCall": [{
+            token : function(dotOperator, operationName) { return ["keyword.operator", "support.function.operation"] },
+            regex : "(\\.)([\\w]+)",
+            next  : "start"
+        }, {
+            token : "keyword.operator",
+            regex : "\\.",
+            next  : "start"
+        }, {
+			token : keywordMapper,
+			regex : "[a-zA-Z_][a-zA-Z0-9_]*\\b"
+		}, {
+            token : "identifier.tree", // tree paths // language.variable
+			regex : "(/[\\w]+)"
         }]
 	};
 
-}
+};
 
 oop.inherits(BxlHighlightRules, TextHighlightRules);
 
