@@ -7,8 +7,11 @@ var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 var BxlHighlightRules = function() {
 
 
-	var docRegex = "\\b(?:WARNING|TODO|FIXME|XXX|HACK|BUG|BARLA)\\b";
+	var docComment = "\\b(?:WARNING|FIXME|XXX|HACK|BUG|BARLA)\\b";
+	var docComment2 = "TODO";
 	var urlRegex = /https?:\/\/[^\s]+/;
+	var docMention = "@[a-zA-Z0-9]+";
+	var docIssue = "[A-Z]+-[0-9]+";
 
 	var keywordMapper = this.createKeywordMapper({
         "keyword": "this|super|root|forkey|forval",
@@ -17,7 +20,7 @@ var BxlHighlightRules = function() {
         "variable.language.invalid.illegal": "env",
         "support.function": "log|warning|error|info|java|compile|exec|stack|trace",
         "storage.type.support.function": "bool|int|float|double|string|date|time|dateTime|path",
-        "constant.language": "null|empty",
+        "constant.language": "null|NULL|empty|EMPTY",
         "constant.language.boolean": "true|false",
     }, "identifier.XXX");
 
@@ -50,7 +53,7 @@ var BxlHighlightRules = function() {
 			regex : "(/[\\w]+)"
 		}, {
 			token : "support.function.module", // module operation call
-			regex : "(\\$)",
+			regex : "(\\$\\$?)",
 			next  : "operationCall"
 		}, {
 			token : "support.function.agent", // module operation call
@@ -73,11 +76,20 @@ var BxlHighlightRules = function() {
 			regex : ".*?\\*\\/",
 			next : "start"
 		}, {
-		    token : "invalid.illegal",
-            regex : docRegex
+		    token : "comment.documentation",
+            regex : docComment
+		}, {
+		    token : "comment.documentation.alternative",
+            regex : docComment2
+		}, {
+		    token : "comment.documentation.mention",
+		    regex : docMention
 		}, {
 		    token: "comment.markup.underline.link",
 		    regex : urlRegex
+		}, {
+			token: "comment.markup.issue",
+			regex: docIssue
 		}, {
 			defaultToken : "comment"
 		}],
@@ -86,11 +98,20 @@ var BxlHighlightRules = function() {
 		    regex : "^",
 		    next  : "start"
 		}, {
-		    token : "invalid.illegal",
-            regex : docRegex
+		    token : "comment.documentation",
+            regex : docComment
+		}, {
+		    token : "comment.documentation.alternative",
+            regex : docComment2
+		}, {
+		    token : "comment.documentation.mention",
+		    regex : docMention
 		}, {
 		    token: "comment.markup.underline.link",
 		    regex : urlRegex
+		}, {
+			token: "comment.markup.issue",
+			regex: docIssue
 		}, {
 		    defaultToken: "comment.line"
 		}],
@@ -692,7 +713,85 @@ var MatchingBraceOutdent = function() {};
 exports.MatchingBraceOutdent = MatchingBraceOutdent;
 });
 
-define("ace/mode/bxl",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/bxl_highlight_rules","ace/worker/worker_client","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle","ace/mode/matching_brace_outdent"], function(require, exports, module) {
+define("ace/mode/bxl_completions",["require","exports","module"], function(require, exports, module) {
+"use strict";
+
+var BxlCompletions = function() {
+
+};
+
+(function() {
+
+    var demo = {
+        "data": [{
+            caption: "pattern",
+            snippet: "pattern",
+            meta: "DATA",
+            score: Number.MAX_VALUE
+        }, {
+            caption: "items",
+            snippet: "stringAttr",
+            meta: "DATA",
+            score: Number.MAX_VALUE
+        }],
+        "in": [{
+            caption: "urlContext",
+            snippet: "urlContext",
+            meta: "IN",
+            score: Number.MAX_VALUE
+        }],
+        "out": [{
+            caption: "content",
+            snippet: "content",
+            meta: "OUT",
+            score: Number.MAX_VALUE
+        }],
+        "cfg": [{
+            caption: "destroyWorld",
+            snippet: "destroyWorld",
+            meta: "CFG",
+            score: Number.MAX_VALUE
+        }]
+    }
+
+    this.getCompletions = function(state, session, pos, prefix) {
+        console.log("State:", state);
+        console.log("Prefix:", prefix);
+
+        var token = session.getTokenAt(pos.row, pos.column);
+        console.log(token);
+
+        if (!token) {
+            return []
+        }
+
+        var completions = [];
+
+        if (token.type === "identifier.tree") {
+            console.log("mám cestu v strome")
+            var previousTokenPos = {row: pos.row, column: token.start};
+            console.log("previousTokenPos", previousTokenPos)
+            var previousToken = session.getTokenAt(previousTokenPos.row, previousTokenPos.column);
+            console.log("previousToken", previousToken)
+            if (previousToken.type === "variable.language") {
+                var tree = previousToken.value;
+                if (demo[tree]){
+                    completions = demo[tree];
+                }
+            }
+        }
+
+        console.log(completions)
+
+        return completions;
+    };
+
+}).call(BxlCompletions.prototype);
+
+exports.BxlCompletions = BxlCompletions;
+});
+
+define("ace/mode/bxl",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/bxl_highlight_rules","ace/worker/worker_client","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle","ace/mode/matching_brace_outdent","ace/mode/bxl_completions"], function(require, exports, module) {
 
 var oop = require("../lib/oop");
 var TextMode = require("./text").Mode;
@@ -701,16 +800,22 @@ var WorkerClient = require("../worker/worker_client").WorkerClient;
 var CstyleBehaviour = require("./behaviour/cstyle").CstyleBehaviour;
 var FoldMode = require("./folding/cstyle").FoldMode;
 var MatchingBraceOutdent = require("./matching_brace_outdent").MatchingBraceOutdent;
+var BxlCompletions = require("./bxl_completions").BxlCompletions;
 
 var Mode = function() {
     this.HighlightRules = BxlHighlightRules;
     this.foldingRules = new FoldMode();
     this.$behaviour = new CstyleBehaviour();
     this.$outdent = new MatchingBraceOutdent();
+    this.$completer = new BxlCompletions();
 };
 oop.inherits(Mode, TextMode);
 
 (function() {
+
+    this.getCompletions = function(state, session, pos, prefix) {
+        return this.$completer.getCompletions(state, session, pos, prefix);
+    };
 
 	this.createWorker = function(session) {
         var worker = new WorkerClient(["ace"], "ace/mode/bxl_worker", "BxlWorker");
@@ -723,6 +828,13 @@ oop.inherits(Mode, TextMode);
         worker.on("terminate", function() {
             session.clearAnnotations();
         });
+
+        worker.call("changeOptions", [{
+            host: window.location.origin,
+            project: blox.constant.BLOX_IDE_URL,
+            service: "codeValidationPage/_validate",
+            parameter: "sourceCode"
+        }]);
 
         return worker;
     }

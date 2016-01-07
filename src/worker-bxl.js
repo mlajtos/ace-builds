@@ -373,7 +373,7 @@ var Range = function(startRow, startColumn, endRow, endColumn) {
         if (!this.isMultiLine()) {
             if (row === this.start.row) {
                 return column < this.start.column ? -1 : (column > this.end.column ? 1 : 0);
-            };
+            }
         }
 
         if (row < this.start.row)
@@ -1417,11 +1417,27 @@ var Mirror = require("../worker/mirror").Mirror;
 var BxlWorker = exports.BxlWorker = function(sender) {
     Mirror.call(this, sender);
     this.setTimeout(250);
+    this.setOptions();
 };
 
 oop.inherits(BxlWorker, Mirror);
 
 (function() {
+    this.setOptions = function(options) {
+        this.options = options || {
+            host: "http://incubator.devel.lan:18080",
+            project: "blox-platform/generix/ide/sk/ide",
+            service: "codeValidationPage/_validate",
+            parameter: "sourceCode"
+        };
+        this.doc.getValue() && this.deferredUpdate.schedule(100);
+    };
+
+    this.changeOptions = function(newOptions) {
+        oop.mixin(this.options, newOptions);
+        this.doc.getValue() && this.deferredUpdate.schedule(100);
+    };
+
     this.onUpdate = function() {
         var worker = this;
 
@@ -1449,10 +1465,8 @@ oop.inherits(BxlWorker, Mirror);
         }
         
         var formData = new FormData;
-        var baseUrl = "blox-platform/generix/setup2/sk/ide/codeValidationPage/_validate";
-        formData.append(baseUrl + "/sourceCode", value);
-        var url = "http://incubator.devel.lan:18080/" + baseUrl;
-        xhr.open("POST", url, true);
+        formData.append(this.options.project + "/" + this.options.service + "/" + this.options.parameter, value);
+        xhr.open("POST", this.options.host + "/" + this.options.project + "/" + this.options.service, true);
         xhr.responseType = "json";
     
         xhr.send(formData);

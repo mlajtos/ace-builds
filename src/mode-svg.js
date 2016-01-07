@@ -16,7 +16,7 @@ var XmlHighlightRules = function(normalize) {
             },
             {
                 token : ["punctuation.instruction.xml", "keyword.instruction.xml"],
-                regex : "(<\\?)(" + tagRegex + ")", next : "processing_instruction",
+                regex : "(<\\?)(" + tagRegex + ")", next : "processing_instruction"
             },
             {token : "comment.xml", regex : "<\\!--", next : "comment"},
             {
@@ -749,25 +749,17 @@ var JavaScriptHighlightRules = function(options) {
 
     var escapedRe = "\\\\(?:x[0-9a-fA-F]{2}|" + // hex
         "u[0-9a-fA-F]{4}|" + // unicode
+        "u{[0-9a-fA-F]{1,6}}|" + // es6 unicode
         "[0-2][0-7]{0,2}|" + // oct
-        "3[0-6][0-7]?|" + // oct
-        "37[0-7]?|" + // oct
+        "3[0-7][0-7]?|" + // oct
         "[4-7][0-7]?|" + //oct
         ".)";
 
     this.$rules = {
         "no_regex" : [
-            {
-                token : "comment",
-                regex : "\\/\\/",
-                next : "line_comment"
-            },
             DocCommentHighlightRules.getStartRule("doc-start"),
+            comments("no_regex"),
             {
-                token : "comment", // multi line comment
-                regex : /\/\*/,
-                next : "comment"
-            }, {
                 token : "string",
                 regex : "'(?=.)",
                 next  : "qstring"
@@ -777,10 +769,10 @@ var JavaScriptHighlightRules = function(options) {
                 next  : "qqstring"
             }, {
                 token : "constant.numeric", // hex
-                regex : /0[xX][0-9a-fA-F]+\b/
+                regex : /0(?:[xX][0-9a-fA-F]+|[bB][01]+)\b/
             }, {
                 token : "constant.numeric", // float
-                regex : /[+-]?\d+(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?\b/
+                regex : /[+-]?\d[\d_]*(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?\b/
             }, {
                 token : [
                     "storage.type", "punctuation.operator", "support.function",
@@ -848,7 +840,7 @@ var JavaScriptHighlightRules = function(options) {
                 next  : "property"
             }, {
                 token : "keyword.operator",
-                regex : /--|\+\+|\.{3}|===|==|=|!=|!==|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\|\||\?\:|[!$%&*+\-~\/^]=?/,
+                regex : /--|\+\+|\.{3}|===|==|=|!=|!==|<+=?|>+=?|!|&&|\|\||\?\:|[!$%&*+\-~\/^]=?/,
                 next  : "start"
             }, {
                 token : "punctuation.operator",
@@ -900,15 +892,8 @@ var JavaScriptHighlightRules = function(options) {
         ],
         "start": [
             DocCommentHighlightRules.getStartRule("doc-start"),
+            comments("start"),
             {
-                token : "comment", // multi line comment
-                regex : "\\/\\*",
-                next : "comment_regex_allowed"
-            }, {
-                token : "comment",
-                regex : "\\/\\/",
-                next : "line_comment_regex_allowed"
-            }, {
                 token: "string.regexp",
                 regex: "\\/",
                 next: "regex"
@@ -985,26 +970,6 @@ var JavaScriptHighlightRules = function(options) {
                 regex: "",
                 next: "no_regex"
             }
-        ],
-        "comment_regex_allowed" : [
-            DocCommentHighlightRules.getTagRule(),
-            {token : "comment", regex : "\\*\\/", next : "start"},
-            {defaultToken : "comment", caseInsensitive: true}
-        ],
-        "comment" : [
-            DocCommentHighlightRules.getTagRule(),
-            {token : "comment", regex : "\\*\\/", next : "no_regex"},
-            {defaultToken : "comment", caseInsensitive: true}
-        ],
-        "line_comment_regex_allowed" : [
-            DocCommentHighlightRules.getTagRule(),
-            {token : "comment", regex : "$|^", next : "start"},
-            {defaultToken : "comment", caseInsensitive: true}
-        ],
-        "line_comment" : [
-            DocCommentHighlightRules.getTagRule(),
-            {token : "comment", regex : "$|^", next : "no_regex"},
-            {defaultToken : "comment", caseInsensitive: true}
         ],
         "qqstring" : [
             {
@@ -1152,6 +1117,7 @@ function JSX() {
         nextState: "jsx"
     }, 
     jsxJsRule,
+    comments("jsxAttributes"),
     {
         token : "entity.other.attribute-name.xml",
         regex : tagRegex
@@ -1167,7 +1133,6 @@ function JSX() {
         stateName : "jsx_attr_q",
         push : [
             {token : "string.attribute-value.xml", regex: "'", next: "pop"},
-            jsxJsRule,
             {include : "reference"},
             {defaultToken : "string.attribute-value.xml"}
         ]
@@ -1176,7 +1141,6 @@ function JSX() {
         regex : '"',
         stateName : "jsx_attr_qq",
         push : [
-            jsxJsRule,
             {token : "string.attribute-value.xml", regex: '"', next: "pop"},
             {include : "reference"},
             {defaultToken : "string.attribute-value.xml"}
@@ -1188,6 +1152,27 @@ function JSX() {
     }];
 }
 
+function comments(next) {
+    return [
+        {
+            token : "comment", // multi line comment
+            regex : /\/\*/,
+            next: [
+                DocCommentHighlightRules.getTagRule(),
+                {token : "comment", regex : "\\*\\/", next : next || "pop"},
+                {defaultToken : "comment", caseInsensitive: true}
+            ]
+        }, {
+            token : "comment",
+            regex : "\\/\\/",
+            next: [
+                DocCommentHighlightRules.getTagRule(),
+                {token : "comment", regex : "$|^", next : next || "pop"},
+                {defaultToken : "comment", caseInsensitive: true}
+            ]
+        }
+    ];
+}
 exports.JavaScriptHighlightRules = JavaScriptHighlightRules;
 });
 

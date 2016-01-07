@@ -83,7 +83,20 @@ text-decoration: line-through;\
 color: red;\
 background-color: inherit;\
 }\
-";
+.ace-bxl .ace_comment.ace_documentation{\
+color: #F92626;\
+}\
+.ace-bxl .ace_comment.ace_documentation.ace_alternative{\
+color: #879EFA;\
+}\
+.ace-bxl .ace_comment.ace_documentation.ace_mention{\
+border: 1px solid #D0CFCF;\
+border-radius: 6px;\
+background-color: whitesmoke;\
+color: black;\
+padding: 0 2px;\
+margin: 0 -4px;\
+}";
 
 var dom = require("../lib/dom");
 dom.importCssString(exports.cssText, exports.cssClass);

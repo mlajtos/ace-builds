@@ -1,7 +1,9 @@
 define("ace/snippets/bxl",["require","exports","module"], function(require, exports, module) {
 "use strict";
 
-exports.snippetText = "\n\
+exports.snippetText = "# scope: bxl\n\
+\n\
+\n\
 # math agent\n\
 \n\
 snippet math.floor\n\
@@ -396,8 +398,50 @@ snippet server.session\n\
 		/tree = ${3:tmp/tree};\n\
 	};\n\
 \n\
+# ide agent\n\
+\n\
+snippet ide.createInstance\n\
+	ide.createInstance{\n\
+		/typePath${1:app/meh} = null;\n\
+		/config = tmp/config; // optional\n\
+	};\n\
+\n\
+snippet ide.getConfigType\n\
+	ide.getConfigType(${1:tmp/config});\n\
+\n\
+snippet ide.getModuleType\n\
+	ide.getModuleType(${1:tmp/config});\n\
+\n\
+snippet ide.isNewIde\n\
+	ide.isNewIde();\n\
+\n\
+snippet ide.moduleInstanceOfPath\n\
+	ide.moduleInstanceOfPath{\n\
+		/module = ${1:tmp/module};\n\
+		/parent = ${2:tmp/parent};\n\
+	}\n\
+\n\
+snippet ide.moduleTypeOfPath\n\
+	ide.moduleTypeOfPath{\n\
+		/module = ${1:tmp/module};\n\
+		/typePath = ${2:tmp/typePath};\n\
+	}\n\
+\n\
+snippet ide.pathInstanceOfPath\n\
+	ide.pathInstanceOfPath{\n\
+		/module = ${1:tmp/module};\n\
+		/parent = ${2:tmp/parent};\n\
+	}\n\
+\n\
+snippet ide.registerCode\n\
+	ide.registerCode{\n\
+		/app = tmp/app;\n\
+		/lib = tmp/lib; // only one\n\
+	}\n\
+\n\
+\n\
 # if else\n\
-snippet if\n\
+snippet ifelse\n\
 	if (${1:true}) {\n\
 		${2}\n\
 	} else {\n\
@@ -418,21 +462,35 @@ snippet while\n\
 		${1} = ${1} + 1;\n\
 	}\n\
 \n\
+snippet dataCondition\n\
+	{\n\
+		/name = ${1:\"name\"};\n\
+		/condType/${2:equal} = null;\n\
+		/valueType/${3:string} = null;\n\
+		/value = ${4:\"hello world\"};\n\
+	}\n\
+\n\
+snippet tryCatch\n\
+	try{\n\
+	  throw/${1:exception}{\n\
+	    /message = \"Additional message\";\n\
+	  };\n\
+	} catch/$1 {\n\
+	  log(loc/message);\n\
+	}\n\
+\n\
 # module operation call\n\
 snippet $\n\
 	\\$${1:module}.${2:operation}{\n\
 		${3}\n\
 	};\n\
 \n\
-# getContent\n\
-snippet getContent\n\
-	\\$${1:modulePath}.getContent{\n\
-		/urlPath = in/urlPath/${2:moduleName};\n\
-		/urlContext[in/urlContext]/${2} = null;\n\
-		/paramTree = in/paramTree/${2};\n\
-		/sessionTree = in/sessionTree/${2};\n\
-		/dataTree = in/dataTree;\n\
-	};";
+snippet formMessage\n\
+	{\n\
+		/type/${1:\"warning\"} = null;\n\
+		/message = ${2:\"message\"};\n\
+		/reasons = ${3:\"reasons\"};\n\
+	}";
 exports.scope = "bxl";
 
 });
