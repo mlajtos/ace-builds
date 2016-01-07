@@ -792,7 +792,7 @@ var BxlCompletions = function() {
         if (token.type === "identifier.tree") { // got path in some tree
             console.log("Path – ", token.value);
             path = token.value;
-            pos = {row: token.row, column: token.start};
+            pos = {row: pos.row, column: token.start};
             token = session.getTokenAt(pos.row, pos.column);
         }
 
