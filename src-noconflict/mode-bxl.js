@@ -47,7 +47,7 @@ var BxlHighlightRules = function() {
 		    next  : "doubleQuotedString"
 		}, {
 			token : "constant.numeric", // number
-			regex : "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?(L|l|F|f|D|d|bd|BD)?\\b"
+			regex : "[-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]\\d+)?)?(L|l|F|f|D|d|bd|BD)?\\b"
 		}, {
 			token : "identifier.tree", // tree paths // language.variable
 			regex : "(/[\\w]+)"
@@ -88,7 +88,7 @@ var BxlHighlightRules = function() {
 		    token: "comment.markup.underline.link",
 		    regex : urlRegex
 		}, {
-			token: "comment.markup.issue",
+			token: "comment.documentation.issue",
 			regex: docIssue
 		}, {
 			defaultToken : "comment"
@@ -110,7 +110,7 @@ var BxlHighlightRules = function() {
 		    token: "comment.markup.underline.link",
 		    regex : urlRegex
 		}, {
-			token: "comment.markup.issue",
+			token: "comment.documentation.issue",
 			regex: docIssue
 		}, {
 		    defaultToken: "comment.line"
@@ -766,34 +766,33 @@ var BxlCompletions = function() {
         }
 
         var completions = [];
+        var tree, path;
 
-        if (token.type == "keyword.operator") { // e.g. "cfg/" – 
-            console.log("strom");
+        if (token.type == "keyword.operator") { // got path separator
             var previousTokenPos = {row: pos.row, column: token.start};
-            console.log("previousTokenPos", previousTokenPos);
             var previousToken = session.getTokenAt(previousTokenPos.row, previousTokenPos.column);
             console.log("previousToken", previousToken);
-            if (previousToken.type === "variable.language") {
-                var tree = previousToken.value;
+
+            if (previousToken.type === "identifier.tree") { // got path in some tree
+                path = previousToken.value;
+                previousTokenPos = {row: previousTokenPos.row, column: previousToken.start};
+                previousToken = session.getTokenAt(previousTokenPos.row, previousTokenPos.column);
+            }
+
+            if (previousToken.type === "variable.language") { // got cfg, data, in, out
+                tree = previousToken.value;
                 if (demo[tree]){
                     completions = demo[tree];
                 }
             }
+
+
         }
 
-        if (token.type === "identifier.tree") { // e.g. "data/p"
-            console.log("cesta v strome");
-            var previousTokenPos = {row: pos.row, column: token.start};
-            console.log("previousTokenPos", previousTokenPos);
-            var previousToken = session.getTokenAt(previousTokenPos.row, previousTokenPos.column);
-            console.log("previousToken", previousToken);
-            if (previousToken.type === "variable.language") {
-                var tree = previousToken.value;
-                if (demo[tree]){
-                    completions = demo[tree];
-                }
-            }
-        }
+        tree = tree ? tree : "";
+        path = path ? path : "";
+        var destination = tree + path;
+        console.log("Input for completer: ", destination);
 
         console.log(completions)
 

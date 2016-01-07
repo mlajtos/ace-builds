@@ -89,13 +89,15 @@ color: #F92626;\
 .ace-bxl .ace_comment.ace_documentation.ace_alternative{\
 color: #879EFA;\
 }\
-.ace-bxl .ace_comment.ace_documentation.ace_mention{\
+.ace-bxl .ace_comment.ace_documentation.ace_mention, .ace-bxl .ace_comment.ace_documentation.ace_issue{\
 border: 1px solid #D0CFCF;\
 border-radius: 6px;\
 background-color: whitesmoke;\
 color: black;\
 padding: 0 2px;\
 margin: 0 -4px;\
+cursor: pointer !important;\
+pointer-events: auto;\
 }";
 
 var dom = require("../lib/dom");
