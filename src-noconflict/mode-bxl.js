@@ -722,6 +722,24 @@ var BxlCompletions = function() {
 
 (function() {
 
+    var demo2 = {
+        "data": {
+            "pattern": {
+                "name": "aloha",
+                "attr": "bla",
+                "items": {
+                    "subitem": {
+                        "name": "Subitem",
+                        "value": 3
+                    }
+                }
+            }
+        },
+        "cfg": {
+            "name": "Hello"
+        }
+    };
+
     var demo = {
         "data": [{
             caption: "pattern",
@@ -755,11 +773,8 @@ var BxlCompletions = function() {
     }
 
     this.getCompletions = function(state, session, pos, prefix) {
-        console.log("State:", state);
-        console.log("Prefix:", prefix);
 
         var token = session.getTokenAt(pos.row, pos.column);
-        console.log(token);
 
         if (!token) {
             return []
@@ -769,32 +784,31 @@ var BxlCompletions = function() {
         var tree, path;
 
         if (token.type == "keyword.operator") { // got path separator
-            var previousTokenPos = {row: pos.row, column: token.start};
-            var previousToken = session.getTokenAt(previousTokenPos.row, previousTokenPos.column);
-            console.log("previousToken", previousToken);
+            console.log("Path separator – ", token.value);
+            var pos = {row: pos.row, column: token.start};
+            var token = session.getTokenAt(pos.row, pos.column);
+        }
 
-            if (previousToken.type === "identifier.tree") { // got path in some tree
-                path = previousToken.value;
-                previousTokenPos = {row: previousTokenPos.row, column: previousToken.start};
-                previousToken = session.getTokenAt(previousTokenPos.row, previousTokenPos.column);
-            }
+        if (token.type === "identifier.tree") { // got path in some tree
+            console.log("Path – ", token.value);
+            path = token.value;
+            pos = {row: token.row, column: token.start};
+            token = session.getTokenAt(pos.row, pos.column);
+        }
 
-            if (previousToken.type === "variable.language") { // got cfg, data, in, out
-                tree = previousToken.value;
-                if (demo[tree]){
-                    completions = demo[tree];
-                }
-            }
+        if (previousToken.type === "variable.language") { // got cfg, data, in, out
+            console.log("Tree – ", token.value);
+            tree = token.value;
+        }
 
-
+        if (demo[tree]){
+            completions = demo[tree];
         }
 
         tree = tree ? tree : "";
         path = path ? path : "";
         var destination = tree + path;
         console.log("Input for completer: ", destination);
-
-        console.log(completions)
 
         return completions;
     };
