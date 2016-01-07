@@ -796,7 +796,7 @@ var BxlCompletions = function() {
             token = session.getTokenAt(pos.row, pos.column);
         }
 
-        if (previousToken.type === "variable.language") { // got cfg, data, in, out
+        if (token.type === "variable.language") { // got cfg, data, in, out
             console.log("Tree – ", token.value);
             tree = token.value;
         }
