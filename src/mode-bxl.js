@@ -767,12 +767,26 @@ var BxlCompletions = function() {
 
         var completions = [];
 
-        if (token.type === "identifier.tree") {
-            console.log("mám cestu v strome")
+        if (token.type == "keyword.operator") { // e.g. "cfg/" – 
+            console.log("strom");
             var previousTokenPos = {row: pos.row, column: token.start};
-            console.log("previousTokenPos", previousTokenPos)
+            console.log("previousTokenPos", previousTokenPos);
             var previousToken = session.getTokenAt(previousTokenPos.row, previousTokenPos.column);
-            console.log("previousToken", previousToken)
+            console.log("previousToken", previousToken);
+            if (previousToken.type === "variable.language") {
+                var tree = previousToken.value;
+                if (demo[tree]){
+                    completions = demo[tree];
+                }
+            }
+        }
+
+        if (token.type === "identifier.tree") { // e.g. "data/p"
+            console.log("cesta v strome");
+            var previousTokenPos = {row: pos.row, column: token.start};
+            console.log("previousTokenPos", previousTokenPos);
+            var previousToken = session.getTokenAt(previousTokenPos.row, previousTokenPos.column);
+            console.log("previousToken", previousToken);
             if (previousToken.type === "variable.language") {
                 var tree = previousToken.value;
                 if (demo[tree]){
