@@ -494,9 +494,8 @@ var JavaScriptHighlightRules = function(options) {
                 this.next = val == "{" ? this.nextState : "";
                 if (val == "{" && stack.length) {
                     stack.unshift("start", state);
-                    return "paren";
                 }
-                if (val == "}" && stack.length) {
+                else if (val == "}" && stack.length) {
                     stack.shift();
                     this.next = stack.shift();
                     if (this.next.indexOf("string") != -1 || this.next.indexOf("jsx") != -1)
@@ -627,7 +626,9 @@ function JSX() {
             {include : "reference"},
             {defaultToken : "string.attribute-value.xml"}
         ]
-    }];
+    },
+    jsxTag
+    ];
     this.$rules.reference = [{
         token : "constant.language.escape.reference.xml",
         regex : "(?:&#[0-9]+;)|(?:&#x[0-9a-fA-F]+;)|(?:&[a-zA-Z0-9_:\\.-]+;)"

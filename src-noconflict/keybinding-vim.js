@@ -1037,10 +1037,7 @@ dom.importCssString(".normal-mode .ace_cursor{\
       if (key.charAt(0) == '\'') {
         return key.charAt(1);
       }
-      var pieces = key.split('-');
-      if (/-$/.test(key)) {
-        pieces.splice(-2, 2, '-');
-      }
+      var pieces = key.split(/-(?!$)/);
       var lastPiece = pieces[pieces.length - 1];
       if (pieces.length == 1 && pieces[0].length == 1) {
         return false;
@@ -2515,11 +2512,18 @@ dom.importCssString(".normal-mode .ace_cursor{\
               text = text.slice(0, - match[0].length);
             }
           }
-          var wasLastLine = head.line - 1 == cm.lastLine();
-          cm.replaceRange('', anchor, head);
-          if (args.linewise && !wasLastLine) {
-            cm.setCursor(new Pos(anchor.line - 1, Number.MAX_VALUE));
-            CodeMirror.commands.newlineAndIndent(cm);
+          var prevLineEnd = new Pos(anchor.line - 1, Number.MAX_VALUE);
+          var wasLastLine = cm.firstLine() == cm.lastLine();
+          if (head.line > cm.lastLine() && args.linewise && !wasLastLine) {
+            cm.replaceRange('', prevLineEnd, head);
+          } else {
+            cm.replaceRange('', anchor, head);
+          }
+          if (args.linewise) {
+            if (!wasLastLine) {
+              cm.setCursor(prevLineEnd);
+              CodeMirror.commands.newlineAndIndent(cm);
+            }
             anchor.ch = Number.MAX_VALUE;
           }
           finalHead = anchor;
@@ -4616,7 +4620,7 @@ dom.importCssString(".normal-mode .ace_cursor{\
               if (decimal + hex + octal > 1) { return 'Invalid arguments'; }
               number = decimal && 'decimal' || hex && 'hex' || octal && 'octal';
             }
-            if (args.eatSpace() && args.match(/\/.*\//)) { 'patterns not supported'; }
+            if (args.match(/\/.*\//)) { return 'patterns not supported'; }
           }
         }
         var err = parseArgs();

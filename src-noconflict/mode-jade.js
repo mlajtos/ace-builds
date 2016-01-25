@@ -350,9 +350,8 @@ var JavaScriptHighlightRules = function(options) {
                 this.next = val == "{" ? this.nextState : "";
                 if (val == "{" && stack.length) {
                     stack.unshift("start", state);
-                    return "paren";
                 }
-                if (val == "}" && stack.length) {
+                else if (val == "}" && stack.length) {
                     stack.shift();
                     this.next = stack.shift();
                     if (this.next.indexOf("string") != -1 || this.next.indexOf("jsx") != -1)
@@ -483,7 +482,9 @@ function JSX() {
             {include : "reference"},
             {defaultToken : "string.attribute-value.xml"}
         ]
-    }];
+    },
+    jsxTag
+    ];
     this.$rules.reference = [{
         token : "constant.language.escape.reference.xml",
         regex : "(?:&#[0-9]+;)|(?:&#x[0-9a-fA-F]+;)|(?:&[a-zA-Z0-9_:\\.-]+;)"
@@ -1440,10 +1441,6 @@ var LessHighlightRules = function() {
                 regex : "\\/\\*",
                 next : "comment"
             }, {
-                token: "paren.lparen",
-                regex: "[^@]\\{",
-                push:  "ruleset"
-            }, {
                 token : "string", // single line
                 regex : '["](?:(?:\\\\.)|(?:[^"\\\\]))*?["]'
             }, {
@@ -1511,10 +1508,10 @@ var LessHighlightRules = function() {
                 regex : "<|>|<=|>=|=|!=|-|%|\\+|\\*"
             }, {
                 token : "paren.lparen",
-                regex : "[[(]"
+                regex : "[[({]"
             }, {
                 token : "paren.rparen",
-                regex : "[\\])]"
+                regex : "[\\])}]"
             }, {
                 token : "text",
                 regex : "\\s+"
@@ -1531,18 +1528,8 @@ var LessHighlightRules = function() {
                 token : "comment", // comment spanning whole line
                 regex : ".+"
             }
-        ],
-        "ruleset" : [
-            {
-                token : "paren.rparen",
-                regex : "\\}",
-                next:   "pop"
-            }
         ]
     };
-
-    this.$rules.ruleset = this.$rules.ruleset.concat(this.$rules.start);
-
     this.normalizeRules();
 };
 
@@ -1795,10 +1782,6 @@ var JadeHighlightRules = function() {
             regex: "^!!!\\s*(?:[a-zA-Z0-9-_]+)?"
         },
         {
-            token : "punctuation.section.comment",
-            regex : "^\\s*\/\/(?:\\s*[^\\s]|\\s+\\S)(?:.*$)"
-        },
-        {
             onMatch: function(value, currentState, stack) {
                 stack.unshift(this.next, value.length - 2, currentState);
                 return "comment";
@@ -1852,8 +1835,13 @@ var JadeHighlightRules = function() {
         }
     ],
     "comment_block": [
-        {regex: /^\s*/, onMatch: function(value, currentState, stack) {
+        {regex: /^\s*(?:\/\/)?/, onMatch: function(value, currentState, stack) {
             if (value.length <= stack[1]) {
+                if (value.slice(-1) == "/") {
+                    stack[1] = value.length - 2;
+                    this.next = "";
+                    return "comment";
+                }
                 stack.shift();
                 stack.shift();
                 this.next = stack.shift();

@@ -1358,8 +1358,10 @@ var supportedModes = {
     Protobuf:    ["proto"],
     Python:      ["py"],
     R:           ["r"],
+    Razor:       ["cshtml"],
     RDoc:        ["Rd"],
     RHTML:       ["Rhtml"],
+    RST:         ["rst"],
     Ruby:        ["rb|ru|gemspec|rake|^Guardfile|^Rakefile|^Gemfile"],
     Rust:        ["rs"],
     SASS:        ["sass"],
@@ -2289,6 +2291,15 @@ var Renderer = require("ace/virtual_renderer").VirtualRenderer;
 var Editor = require("ace/editor").Editor;
 var MultiSelect = require("ace/multi_select").MultiSelect;
 
+var urlOptions = {}
+try {
+    window.location.search.slice(1).split(/[&]/).forEach(function(e) {
+        var parts = e.split("=");
+        urlOptions[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
+    });
+} catch(e) {
+    console.error(e);
+}
 exports.createEditor = function(el) {
     return new Editor(new Renderer(el));
 };
@@ -2404,7 +2415,10 @@ exports.bindCheckbox = function(id, callback, noInit) {
         id = el.id;
     }
     var el = document.getElementById(id);
-    if (localStorage && localStorage.getItem(id))
+    
+    if (urlOptions[id])
+        el.checked = urlOptions[id] == "1";
+    else if (localStorage && localStorage.getItem(id))
         el.checked = localStorage.getItem(id) == "1";
 
     var onCheck = function() {
@@ -2423,7 +2437,10 @@ exports.bindDropdown = function(id, callback, noInit) {
         var el = id;
         id = el.id;
     }
-    if (localStorage && localStorage.getItem(id))
+    
+    if (urlOptions[id])
+        el.value = urlOptions[id];
+    else if (localStorage && localStorage.getItem(id))
         el.value = localStorage.getItem(id);
 
     var onChange = function() {
@@ -4632,10 +4649,7 @@ dom.importCssString(".normal-mode .ace_cursor{\
       if (key.charAt(0) == '\'') {
         return key.charAt(1);
       }
-      var pieces = key.split('-');
-      if (/-$/.test(key)) {
-        pieces.splice(-2, 2, '-');
-      }
+      var pieces = key.split(/-(?!$)/);
       var lastPiece = pieces[pieces.length - 1];
       if (pieces.length == 1 && pieces[0].length == 1) {
         return false;
@@ -6110,11 +6124,18 @@ dom.importCssString(".normal-mode .ace_cursor{\
               text = text.slice(0, - match[0].length);
             }
           }
-          var wasLastLine = head.line - 1 == cm.lastLine();
-          cm.replaceRange('', anchor, head);
-          if (args.linewise && !wasLastLine) {
-            cm.setCursor(new Pos(anchor.line - 1, Number.MAX_VALUE));
-            CodeMirror.commands.newlineAndIndent(cm);
+          var prevLineEnd = new Pos(anchor.line - 1, Number.MAX_VALUE);
+          var wasLastLine = cm.firstLine() == cm.lastLine();
+          if (head.line > cm.lastLine() && args.linewise && !wasLastLine) {
+            cm.replaceRange('', prevLineEnd, head);
+          } else {
+            cm.replaceRange('', anchor, head);
+          }
+          if (args.linewise) {
+            if (!wasLastLine) {
+              cm.setCursor(prevLineEnd);
+              CodeMirror.commands.newlineAndIndent(cm);
+            }
             anchor.ch = Number.MAX_VALUE;
           }
           finalHead = anchor;
@@ -8211,7 +8232,7 @@ dom.importCssString(".normal-mode .ace_cursor{\
               if (decimal + hex + octal > 1) { return 'Invalid arguments'; }
               number = decimal && 'decimal' || hex && 'hex' || octal && 'octal';
             }
-            if (args.eatSpace() && args.match(/\/.*\//)) { 'patterns not supported'; }
+            if (args.match(/\/.*\//)) { return 'patterns not supported'; }
           }
         }
         var err = parseArgs();
@@ -10330,6 +10351,10 @@ exports.runEmmetCommand = function runEmmetCommand(editor) {
         if (this.action == "expand_abbreviation_with_tab") {
             if (!editor.selection.isEmpty())
                 return false;
+            var pos = editor.selection.lead;
+            var token = editor.session.getTokenAt(pos.row, pos.column);
+            if (token && /\btag\b/.test(token.type))
+                return false;
         }
         
         if (this.action == "wrap_with_abbreviation") {
@@ -10337,11 +10362,6 @@ exports.runEmmetCommand = function runEmmetCommand(editor) {
                 actions.run("wrap_with_abbreviation", editorProxy);
             }, 0);
         }
-        
-        var pos = editor.selection.lead;
-        var token = editor.session.getTokenAt(pos.row, pos.column);
-        if (token && /\btag\b/.test(token.type))
-            return false;
         
         var result = actions.run(this.action, editorProxy);
     } catch(e) {
@@ -11419,6 +11439,8 @@ var doLiveAutocomplete = function(e) {
             }
             editor.completer.autoInsert = false;
             editor.completer.showPopup(editor);
+        } else {
+            console.log("Don't have prefix, not autocompleting.")
         }
     }
 };

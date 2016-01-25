@@ -1522,7 +1522,7 @@ exports.addMouseWheelListener = function(el, callback) {
     }
 };
 
-exports.addMultiMouseDownListener = function(el, timeouts, eventHandler, callbackName) {
+exports.addMultiMouseDownListener = function(elements, timeouts, eventHandler, callbackName) {
     var clicks = 0;
     var startX, startY, timer; 
     var eventNames = {
@@ -1531,7 +1531,7 @@ exports.addMultiMouseDownListener = function(el, timeouts, eventHandler, callbac
         4: "quadclick"
     };
 
-    exports.addListener(el, "mousedown", function(e) {
+    function onMousedown(e) {
         if (exports.getButton(e) !== 0) {
             clicks = 0;
         } else if (e.detail > 1) {
@@ -1563,18 +1563,22 @@ exports.addMultiMouseDownListener = function(el, timeouts, eventHandler, callbac
             clicks = 0;
         else if (clicks > 1)
             return eventHandler[callbackName](eventNames[clicks], e);
-    });
-
-    if (useragent.isOldIE) {
-        exports.addListener(el, "dblclick", function(e) {
-            clicks = 2;
-            if (timer)
-                clearTimeout(timer);
-            timer = setTimeout(function() {timer = null}, timeouts[clicks - 1] || 600);
-            eventHandler[callbackName]("mousedown", e);
-            eventHandler[callbackName](eventNames[clicks], e);
-        });
     }
+    function onDblclick(e) {
+        clicks = 2;
+        if (timer)
+            clearTimeout(timer);
+        timer = setTimeout(function() {timer = null}, timeouts[clicks - 1] || 600);
+        eventHandler[callbackName]("mousedown", e);
+        eventHandler[callbackName](eventNames[clicks], e);
+    }
+    if (!Array.isArray(elements))
+        elements = [elements];
+    elements.forEach(function(el) {
+        exports.addListener(el, "mousedown", onMousedown);
+        if (useragent.isOldIE)
+            exports.addListener(el, "dblclick", onDblclick);
+    });
 };
 
 var getModifierHash = useragent.isMac && useragent.isOpera && !("KeyboardEvent" in window)
@@ -1976,11 +1980,11 @@ var TextInput = function(parentNode, host) {
         if (tempStyle) return text.focus();
         var top = text.style.top;
         text.style.position = "fixed";
-        text.style.top = "-1000px";
+        text.style.top = "0px";
         text.focus();
         setTimeout(function() {
             text.style.position = "";
-            if (text.style.top == "-1000px")
+            if (text.style.top == "0px")
                 text.style.top = top;
         }, 0);
     };
@@ -2350,6 +2354,8 @@ var TextInput = function(parentNode, host) {
 
         if (host.renderer.$keepTextAreaAtCursor)
             host.renderer.$keepTextAreaAtCursor = null;
+
+        clearTimeout(closeTimeout);
         if (useragent.isWin && !useragent.isOldIE)
             event.capture(host.container, move, onContextMenuClose);
     };
@@ -2374,6 +2380,11 @@ var TextInput = function(parentNode, host) {
         host.textInput.onContextMenu(e);
         onContextMenuClose();
     };
+    event.addListener(text, "mouseup", onContextMenu);
+    event.addListener(text, "mousedown", function(e) {
+        e.preventDefault();
+        onContextMenuClose();
+    });
     event.addListener(host.renderer.scroller, "contextmenu", onContextMenu);
     event.addListener(text, "contextmenu", onContextMenu);
 };
@@ -2425,10 +2436,11 @@ function DefaultHandlers(mouseHandler) {
             var selectionRange = editor.getSelectionRange();
             var selectionEmpty = selectionRange.isEmpty();
             editor.$blockScrolling++;
-            if (selectionEmpty)
+            if (selectionEmpty || button == 1)
                 editor.selection.moveToPosition(pos);
             editor.$blockScrolling--;
-            editor.textInput.onContextMenu(ev.domEvent);
+            if (button == 2)
+                editor.textInput.onContextMenu(ev.domEvent);
             return; // stopping event here breaks contextmenu on ff mac
         }
 
@@ -3788,25 +3800,22 @@ var MouseHandler = function(editor) {
     new DragdropHandler(this);
 
     var focusEditor = function(e) {
-        if (!document.hasFocus || !document.hasFocus())
+        var windowBlurred = !document.hasFocus || !document.hasFocus()
+            || !editor.isFocused() && document.activeElement == (editor.textInput && editor.textInput.getElement())
+        if (windowBlurred)
             window.focus();
         editor.focus();
-        if (!editor.isFocused())
-            window.focus();
     };
 
     var mouseTarget = editor.renderer.getMouseEventTarget();
     event.addListener(mouseTarget, "click", this.onMouseEvent.bind(this, "click"));
     event.addListener(mouseTarget, "mousemove", this.onMouseMove.bind(this, "mousemove"));
-    event.addMultiMouseDownListener(mouseTarget, [400, 300, 250], this, "onMouseEvent");
-    if (editor.renderer.scrollBarV) {
-        event.addMultiMouseDownListener(editor.renderer.scrollBarV.inner, [400, 300, 250], this, "onMouseEvent");
-        event.addMultiMouseDownListener(editor.renderer.scrollBarH.inner, [400, 300, 250], this, "onMouseEvent");
-        if (useragent.isIE) {
-            event.addListener(editor.renderer.scrollBarV.element, "mousedown", focusEditor);
-            event.addListener(editor.renderer.scrollBarH.element, "mousedown", focusEditor);
-        }
-    }
+    event.addMultiMouseDownListener([
+        mouseTarget,
+        editor.renderer.scrollBarV && editor.renderer.scrollBarV.inner,
+        editor.renderer.scrollBarH && editor.renderer.scrollBarH.inner,
+        editor.textInput && editor.textInput.getElement()
+    ].filter(Boolean), [400, 300, 250], this, "onMouseEvent");
     event.addMouseWheelListener(editor.container, this.onMouseWheel.bind(this, "mousewheel"));
     event.addTouchMoveListener(editor.container, this.onTouchMove.bind(this, "touchmove"));
 
@@ -3817,11 +3826,11 @@ var MouseHandler = function(editor) {
     event.addListener(gutterEl, "mousemove", this.onMouseEvent.bind(this, "guttermousemove"));
 
     event.addListener(mouseTarget, "mousedown", focusEditor);
-
-    event.addListener(gutterEl, "mousedown", function(e) {
-        editor.focus();
-        return event.preventDefault(e);
-    });
+    event.addListener(gutterEl, "mousedown", focusEditor);
+    if (useragent.isIE && editor.renderer.scrollBarV) {
+        event.addListener(editor.renderer.scrollBarV.element, "mousedown", focusEditor);
+        event.addListener(editor.renderer.scrollBarH.element, "mousedown", focusEditor);
+    }
 
     editor.on("mousemove", function(e){
         if (_self.state || _self.$dragDelay || !_self.$dragEnabled)
@@ -18656,7 +18665,7 @@ exports.createEditSession = function(text, mode) {
 }
 exports.EditSession = EditSession;
 exports.UndoManager = UndoManager;
-exports.version = "1.2.2";
+exports.version = "1.2.3";
 });
             (function() {
                 ace.require(["ace/ace"], function(a) {

@@ -83,6 +83,9 @@ text-decoration: line-through;\
 color: red;\
 background-color: inherit;\
 }\
+.ace-bxl .ace_unknown {\
+border-bottom: 1px solid red;\
+}\
 .ace-bxl .ace_comment.ace_documentation{\
 color: #F92626;\
 }\

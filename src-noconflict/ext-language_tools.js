@@ -1887,6 +1887,8 @@ var doLiveAutocomplete = function(e) {
             }
             editor.completer.autoInsert = false;
             editor.completer.showPopup(editor);
+        } else {
+            console.log("Don't have prefix, not autocompleting.")
         }
     }
 };

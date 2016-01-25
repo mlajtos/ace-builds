@@ -180,10 +180,6 @@ var LessHighlightRules = function() {
                 regex : "\\/\\*",
                 next : "comment"
             }, {
-                token: "paren.lparen",
-                regex: "[^@]\\{",
-                push:  "ruleset"
-            }, {
                 token : "string", // single line
                 regex : '["](?:(?:\\\\.)|(?:[^"\\\\]))*?["]'
             }, {
@@ -251,10 +247,10 @@ var LessHighlightRules = function() {
                 regex : "<|>|<=|>=|=|!=|-|%|\\+|\\*"
             }, {
                 token : "paren.lparen",
-                regex : "[[(]"
+                regex : "[[({]"
             }, {
                 token : "paren.rparen",
-                regex : "[\\])]"
+                regex : "[\\])}]"
             }, {
                 token : "text",
                 regex : "\\s+"
@@ -271,18 +267,8 @@ var LessHighlightRules = function() {
                 token : "comment", // comment spanning whole line
                 regex : ".+"
             }
-        ],
-        "ruleset" : [
-            {
-                token : "paren.rparen",
-                regex : "\\}",
-                next:   "pop"
-            }
         ]
     };
-
-    this.$rules.ruleset = this.$rules.ruleset.concat(this.$rules.start);
-
     this.normalizeRules();
 };
 

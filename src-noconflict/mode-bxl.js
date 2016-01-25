@@ -19,10 +19,10 @@ var BxlHighlightRules = function() {
         "variable.language": "loc|in|out|cfg|data|tmp|__init__|throw|try|catch|finally",
         "variable.language.invalid.illegal": "env",
         "support.function": "log|warning|error|info|java|compile|exec|stack|trace",
-        "storage.type.support.function": "bool|int|float|double|string|date|time|dateTime|path",
+        "storage.type.support.function": "bool|int|long|float|double|string|date|time|dateTime|path",
         "constant.language": "null|NULL|empty|EMPTY",
         "constant.language.boolean": "true|false",
-    }, "identifier.XXX");
+    }, "unknown");
 
 	this.$rules = {
 	    "start": [ {
@@ -722,57 +722,42 @@ var BxlCompletions = function() {
 
 (function() {
 
-    var demo2 = {
+    function index(obj,i) {
+        if (obj && obj.hasOwnProperty(i)) {
+            return obj[i]
+        } else {
+            return undefined
+        }
+        
+    }
+
+    var demo = {
         "data": {
             "pattern": {
-                "name": "aloha",
-                "attr": "bla",
+                "name": "Meno patternu",
+                "attr": true,
                 "items": {
                     "subitem": {
-                        "name": "Subitem",
-                        "value": 3
+                        "name": "meh",
+                        "value": 23
                     }
                 }
             }
         },
         "cfg": {
-            "name": "Hello"
+            "name": "something"
+        },
+        "in": null,
+        "out": {
+            "output": null
         }
     };
 
-    var demo = {
-        "data": [{
-            caption: "pattern",
-            snippet: "pattern",
-            meta: "DATA",
-            score: Number.MAX_VALUE
-        }, {
-            caption: "items",
-            snippet: "stringAttr",
-            meta: "DATA",
-            score: Number.MAX_VALUE
-        }],
-        "in": [{
-            caption: "urlContext",
-            snippet: "urlContext",
-            meta: "IN",
-            score: Number.MAX_VALUE
-        }],
-        "out": [{
-            caption: "content",
-            snippet: "content",
-            meta: "OUT",
-            score: Number.MAX_VALUE
-        }],
-        "cfg": [{
-            caption: "destroyWorld",
-            snippet: "destroyWorld",
-            meta: "CFG",
-            score: Number.MAX_VALUE
-        }]
+    if (window.blox && window.blox.__autocomplete__) {
+        demo = window.blox.__autocomplete__
     }
 
-    this.getCompletions = function(state, session, pos, prefix) {
+    this.getCompletions = function(state, session, pos, prefix) { 
 
         var token = session.getTokenAt(pos.row, pos.column);
 
@@ -781,34 +766,63 @@ var BxlCompletions = function() {
         }
 
         var completions = [];
-        var tree, path;
+        var tree, path, separator;
 
-        if (token.type == "keyword.operator") { // got path separator
-            console.log("Path separator – ", token.value);
+        if (token.type === "keyword.operator" && token.value === "/") { // got path separator
+            separator = token.value;
             var pos = {row: pos.row, column: token.start};
             var token = session.getTokenAt(pos.row, pos.column);
         }
 
         if (token.type === "identifier.tree") { // got path in some tree
-            console.log("Path – ", token.value);
             path = token.value;
             pos = {row: pos.row, column: token.start};
             token = session.getTokenAt(pos.row, pos.column);
         }
 
-        if (token.type === "variable.language") { // got cfg, data, in, out
-            console.log("Tree – ", token.value);
+        if (token.type === "variable.language" && token.value !== "tmp") { // got cfg, data, in, out
             tree = token.value;
-        }
-
-        if (demo[tree]){
-            completions = demo[tree];
         }
 
         tree = tree ? tree : "";
         path = path ? path : "";
-        var destination = tree + path;
-        console.log("Input for completer: ", destination);
+        separator = separator ? separator : "";
+
+        var subtree = (tree + path).split('/').reduce(index, demo)
+        
+        if (typeof subtree === "undefined") {
+            var meh = (tree + path).split('/')
+            meh.pop()
+            var subtree = meh.reduce(index, demo)    
+        }
+
+        function traverse(o, func, path, score) {
+            if (typeof o === "object") {
+                for (var i in o) {
+                    path.push(i)
+                    score = score - 1
+                    func.apply(this, [i, o[i], path, score]);
+
+                    if (o[i] !== null && typeof(o[i]) === "object") {
+                        traverse(o[i], func, path, score);
+                    }
+                    path.pop()
+                    score = score + 1
+                }
+            }
+        }
+
+        var completions = []
+
+        traverse(subtree, function(k, v, p, s) {
+            var path = p.join("/")
+            completions.push({
+                caption: path,
+                snippet: path,
+                meta: "",
+                score: s,
+            })
+        }, [], 100);
 
         return completions;
     };
@@ -840,6 +854,10 @@ oop.inherits(Mode, TextMode);
 
 (function() {
 
+    this.lineCommentStart = "//";
+    this.blockComment = {start: "/*", end: "*/"};
+
+
     this.getCompletions = function(state, session, pos, prefix) {
         return this.$completer.getCompletions(state, session, pos, prefix);
     };
@@ -857,7 +875,7 @@ oop.inherits(Mode, TextMode);
         });
 
         worker.call("changeOptions", [{
-            host: window.location.origin,
+            host: window.location.origin, // blox.constant.
             project: blox.constant.BLOX_IDE_URL,
             service: "codeValidationPage/_validate",
             parameter: "sourceCode"

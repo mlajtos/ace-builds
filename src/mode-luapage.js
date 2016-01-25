@@ -350,9 +350,8 @@ var JavaScriptHighlightRules = function(options) {
                 this.next = val == "{" ? this.nextState : "";
                 if (val == "{" && stack.length) {
                     stack.unshift("start", state);
-                    return "paren";
                 }
-                if (val == "}" && stack.length) {
+                else if (val == "}" && stack.length) {
                     stack.shift();
                     this.next = stack.shift();
                     if (this.next.indexOf("string") != -1 || this.next.indexOf("jsx") != -1)
@@ -483,7 +482,9 @@ function JSX() {
             {include : "reference"},
             {defaultToken : "string.attribute-value.xml"}
         ]
-    }];
+    },
+    jsxTag
+    ];
     this.$rules.reference = [{
         token : "constant.language.escape.reference.xml",
         regex : "(?:&#[0-9]+;)|(?:&#x[0-9a-fA-F]+;)|(?:&[a-zA-Z0-9_:\\.-]+;)"
@@ -2820,17 +2821,14 @@ var LuaHighlightRules = function() {
 
     var stdLibaries = ("string|package|os|io|math|debug|table|coroutine");
 
-    var futureReserved = "";
-
     var deprecatedIn5152 = ("setn|foreach|foreachi|gcinfo|log10|maxn");
 
     var keywordMapper = this.createKeywordMapper({
         "keyword": keywords,
         "support.function": functions,
-        "invalid.deprecated": deprecatedIn5152,
+        "keyword.deprecated": deprecatedIn5152,
         "constant.library": stdLibaries,
         "constant.language": builtinConstants,
-        "invalid.illegal": futureReserved,
         "variable.language": "self"
     }, "identifier");
 

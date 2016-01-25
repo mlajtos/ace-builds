@@ -494,9 +494,8 @@ var JavaScriptHighlightRules = function(options) {
                 this.next = val == "{" ? this.nextState : "";
                 if (val == "{" && stack.length) {
                     stack.unshift("start", state);
-                    return "paren";
                 }
-                if (val == "}" && stack.length) {
+                else if (val == "}" && stack.length) {
                     stack.shift();
                     this.next = stack.shift();
                     if (this.next.indexOf("string") != -1 || this.next.indexOf("jsx") != -1)
@@ -627,7 +626,9 @@ function JSX() {
             {include : "reference"},
             {defaultToken : "string.attribute-value.xml"}
         ]
-    }];
+    },
+    jsxTag
+    ];
     this.$rules.reference = [{
         token : "constant.language.escape.reference.xml",
         regex : "(?:&#[0-9]+;)|(?:&#x[0-9a-fA-F]+;)|(?:&[a-zA-Z0-9_:\\.-]+;)"
@@ -3192,7 +3193,7 @@ oop.inherits(Mode, TextMode);
             var match = line.match(/^.*[\{\(\[]\s*$/);
             var startingClassOrMethod = line.match(/^\s*(class|def|module)\s.*$/);
             var startingDoBlock = line.match(/.*do(\s*|\s+\|.*\|\s*)$/);
-            var startingConditional = line.match(/^\s*(if|else)\s*/)
+            var startingConditional = line.match(/^\s*(if|else|when)\s*/)
             if (match || startingClassOrMethod || startingDoBlock || startingConditional) {
                 indent += tab;
             }
