@@ -15,7 +15,7 @@ var BxlHighlightRules = function() {
 
 	var keywordMapper = this.createKeywordMapper({
         "keyword": "this|super|root|forkey|forval",
-        "keyword.control": "if|else|do|while|for|break|continue|switch|case|default|return",
+        "keyword.control": "if|else|do|while|for|break|continue|switch|case|default|return|instanceof",
         "variable.language": "loc|in|out|cfg|data|tmp|__init__|throw|try|catch|finally",
         "variable.language.invalid.illegal": "env",
         "support.function": "log|warning|error|info|java|compile|exec|stack|trace",

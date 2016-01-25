@@ -7,153 +7,153 @@ exports.snippetText = "# scope: bxl\n\
 # math agent\n\
 \n\
 snippet math.floor\n\
-	math.floor(${1});\n\
+	math.floor(${1})\n\
 \n\
 snippet math.ceil\n\
-	math.ceil(${1});\n\
+	math.ceil(${1})\n\
 \n\
 snippet math.random\n\
-	math.random();\n\
+	math.random()\n\
 \n\
 snippet math.round\n\
-	math.round(${1});\n\
+	math.round(${1})\n\
 \n\
 # is agent\n\
 \n\
 snippet is.module\n\
-	is.module(${1});\n\
+	is.module(${1})\n\
 \n\
 snippet is.subNodes\n\
-	is.subNodes(${1});\n\
+	is.subNodes(${1})\n\
 \n\
 snippet is.typeBoolean\n\
-	is.typeBoolean(${1});\n\
+	is.typeBoolean(${1})\n\
 \n\
 snippet is.typeDate\n\
-	is.typeDate(${1});\n\
+	is.typeDate(${1})\n\
 \n\
 snippet is.typeDatetime\n\
-	is.typeDatetime(${1});\n\
+	is.typeDatetime(${1})\n\
 \n\
 snippet is.typeDouble\n\
-	is.typeDouble(${1});\n\
+	is.typeDouble(${1})\n\
 \n\
 snippet is.typeDecimal\n\
-	is.typeDecimal(${1});\n\
+	is.typeDecimal(${1})\n\
 \n\
 snippet is.typeInt\n\
-	is.typeInt(${1});\n\
+	is.typeInt(${1})\n\
 \n\
 snippet is.typeLong\n\
-	is.typeLong(${1});\n\
+	is.typeLong(${1})\n\
 \n\
 snippet is.typeNode\n\
-	is.typeNode(${1});\n\
+	is.typeNode(${1})\n\
 \n\
 snippet is.typeString\n\
-	is.typeString(${1});\n\
+	is.typeString(${1})\n\
 \n\
 snippet is.typeTime\n\
-	is.typeTime(${1});\n\
+	is.typeTime(${1})\n\
 \n\
 snippet is.typeValueNN\n\
-	is.typeValueNN(${1});\n\
+	is.typeValueNN(${1})\n\
 \n\
 snippet is.valueNE\n\
-	is.valueNE(${1});\n\
+	is.valueNE(${1})\n\
 \n\
 snippet is.valueDatetime\n\
-	is.valueDatetime(${1});\n\
+	is.valueDatetime(${1})\n\
 \n\
 snippet is.valueDate\n\
-	is.valueDate(${1});\n\
+	is.valueDate(${1})\n\
 \n\
 snippet is.valueTime\n\
-	is.valueTime(${1});\n\
+	is.valueTime(${1})\n\
 \n\
 snippet is.valueBoolean\n\
-	 is.valueBoolean(${1});\n\
+	 is.valueBoolean(${1})\n\
 \n\
 snippet is.valueDouble\n\
-	is.valueDouble(${1});\n\
+	is.valueDouble(${1})\n\
 \n\
 snippet is.valueDoubleNZ\n\
-	is.valueDoubleNZ(${1});\n\
+	is.valueDoubleNZ(${1})\n\
 \n\
 snippet is.valueDecimal\n\
-	is.valueDecimal(${1});\n\
+	is.valueDecimal(${1})\n\
 \n\
 snippet is.valueInt\n\
-	is.valueInt(${1});\n\
+	is.valueInt(${1})\n\
 \n\
 snippet is.valueIntNZ\n\
-	is.valueIntNZ(${1});\n\
+	is.valueIntNZ(${1})\n\
 \n\
 snippet is.valueLong\n\
-	is.valueLong(${1});\n\
+	is.valueLong(${1})\n\
 \n\
 snippet is.valuePathNE\n\
-	is.valuePathNE(${1});\n\
+	is.valuePathNE(${1})\n\
 \n\
 snippet is.valueString\n\
-	is.valueString(${1});\n\
+	is.valueString(${1})\n\
 \n\
 snippet is.valueStringNE\n\
-	is.valueStringNE(${1});\n\
+	is.valueStringNE(${1})\n\
 \n\
 # path agent\n\
 \n\
 snippet path.items\n\
-	path.items(${1});\n\
+	path.items(${1})\n\
 \n\
 snippet path.join\n\
-	path.join(${1});\n\
+	path.join(${1})\n\
 \n\
 snippet path.key\n\
-	path.key(${1});\n\
+	path.key(${1})\n\
 \n\
 snippet path.length\n\
-	path.length(${1});\n\
+	path.length(${1})\n\
 \n\
 snippet path.pathToTreeFocus\n\
-	path.pathToTreeFocus(${1});\n\
+	path.pathToTreeFocus(${1})\n\
 \n\
 snippet path.treeFocusToPath\n\
-	path.treeFocusToPath(${1});\n\
+	path.treeFocusToPath(${1})\n\
 \n\
 snippet path.split\n\
 	path.split{\n\
 		/path = ${1};\n\
 		/key = ${2};\n\
-	};\n\
+	}\n\
 \n\
 snippet path.keyAt\n\
 	path.keyAt{\n\
 		/path = ${1};\n\
 		/index = ${2};\n\
-	};\n\
+	}\n\
 \n\
 snippet path.keyLast\n\
-	path.keyLast(${1});\n\
+	path.keyLast(${1})\n\
 \n\
 snippet path.subPath\n\
 	path.subPath{\n\
 		/path = ${1};\n\
 		/beginIndex = ${2};\n\
 		/endIndex = ${3};\n\
-	};\n\
+	}\n\
 \n\
 snippet path.tail\n\
-	path.tail(${1});\n\
+	path.tail(${1})\n\
 \n\
 snippet path.val\n\
-	path.val(${1});\n\
+	path.val(${1})\n\
 \n\
 snippet path.keyDelete\n\
 	path.keyDelete{\n\
 		/path = ${1};\n\
 		/key = ${2};\n\
-	};\n\
+	}\n\
 \n\
 # date agent\n\
 \n\
@@ -169,22 +169,22 @@ snippet date.add\n\
 	}\n\
 \n\
 snippet date.dateToStruct\n\
-	date.dateToStruct(${1});\n\
+	date.dateToStruct(${1})\n\
 \n\
 snippet date.datetimeToStruct\n\
-	date.datetimeToStruct(${1});\n\
+	date.datetimeToStruct(${1})\n\
 \n\
 snippet date.now\n\
-	date.now();\n\
+	date.now()\n\
 \n\
 snippet date.parseDatetime\n\
-	date.parseDatetime(${1});\n\
+	date.parseDatetime(${1})\n\
 \n\
 snippet date.parseDate\n\
-	date.parseDate(${1});\n\
+	date.parseDate(${1})\n\
 \n\
 snippet date.parseTime\n\
-	date.parseTime(${1});\n\
+	date.parseTime(${1})\n\
 \n\
 # tree agent\n\
 \n\
@@ -192,55 +192,55 @@ snippet tree.add\n\
 	tree.add{\n\
 		/tree = ${1};\n\
 		/add = ${2};\n\
-	};\n\
+	}\n\
 \n\
 snippet tree.count\n\
-	tree.count(${1});\n\
+	tree.count(${1})\n\
 \n\
 snippet tree.dumpToBxl\n\
-	tree.dumpToBxl(${1});\n\
+	tree.dumpToBxl(${1})\n\
 \n\
 snippet tree.dumpToString\n\
-	tree.dumpToString(${1});\n\
+	tree.dumpToString(${1})\n\
 \n\
 snippet tree.keyDelete\n\
 	tree.keyDelete{\n\
 		/tree = ${1};\n\
 		/key = ${2};\n\
-	};\n\
+	}\n\
 \n\
 snippet tree.keyFirst\n\
-	tree.keyFirst(${1});\n\
+	tree.keyFirst(${1})\n\
 \n\
 snippet tree.keyLast\n\
-	tree.keyLast(${1});\n\
+	tree.keyLast(${1})\n\
 \n\
 snippet tree.keyMoveDown\n\
 	tree.keyMoveDown{\n\
 		/tree = ${1};\n\
 		/key = ${2};\n\
 		/cycle = true;\n\
-	};\n\
+	}\n\
 \n\
 snippet tree.keyMoveUp\n\
 	tree.keyMoveUp{\n\
 		/tree = ${1};\n\
 		/key = ${2};\n\
 		/cycle = true;\n\
-	};\n\
+	}\n\
 \n\
 snippet tree.keyNext\n\
 	tree.keyNext{\n\
 		/tree = ${1};\n\
 		/key = ${2};\n\
 		/cycle = true;\n\
-	};\n\
+	}\n\
 \n\
 snippet tree.keyPos\n\
 	tree.keyPos{ \n\
 		/tree = ${1};\n\
 		/key = ${2};\n\
-	};\n\
+	}\n\
 \n\
 snippet tree.keysDelete\n\
 	tree.keysDelete{\n\
@@ -248,7 +248,7 @@ snippet tree.keysDelete\n\
 		/keys = {\n\
 			${2}\n\
 		};\n\
-	};\n\
+	}\n\
 \n\
 snippet tree.pathDelete\n\
 	tree.pathDelete{\n\
@@ -256,7 +256,7 @@ snippet tree.pathDelete\n\
 		/path = {\n\
 			${2}\n\
 		};\n\
-	};\n\
+	}\n\
 \n\
 snippet tree.reverse\n\
 	tree.reverse(${1});\n\
@@ -266,7 +266,7 @@ snippet tree.subtree\n\
 		/tree = ${1};\n\
 		/beginIndex = ${2};\n\
 		/endIndex = ${3};\n\
-	};\n\
+	}\n\
 \n\
 snippet tree.keyInsert\n\
 	tree.keyInsert{\n\
@@ -274,7 +274,7 @@ snippet tree.keyInsert\n\
 		/key = ${2};\n\
 		/addTree = ${3};\n\
 		/afterKey = ${4};\n\
-	};\n\
+	}\n\
 \n\
 # str agent\n\
 \n\
@@ -289,51 +289,51 @@ snippet str.contains\n\
 		/string = ${1:\"hello world\"};\n\
 		/substring = ${2:\"ello\"};\n\
 		/ignoreCase = true;\n\
-	};\n\
+	}\n\
 \n\
 snippet str.endsWith\n\
 	str.endsWith{\n\
 		/string = ${1:\"Hello\"};\n\
 		/suffix= ${2:\"lo\"};\n\
-	};\n\
+	}\n\
 \n\
 snippet str.extractDiacritics\n\
-	str.extractDiacritics(${1:\"héľĺó wôřlď\"});\n\
+	str.extractDiacritics(${1:\"héľĺó wôřlď\"})\n\
 \n\
 snippet str.format\n\
 	str.format{\n\
-		/string = ${1};\n\
+		/string = ${1:\"Hello %%name%%\"};\n\
 		/params{\n\
-			${2}\n\
+			${2:/name = \"World\"}\n\
 		};\n\
-	};\n\
+	}\n\
 \n\
 snippet str.find\n\
 	str.find{ \n\
 		/string = ${1:\"hello world\"}; \n\
 		/regex = ${2:\"[a-z]\"}; \n\
-	};\n\
+	}\n\
 \n\
 snippet str.hashMD5\n\
-	str.hashMD5(${1:\"Hello World\"});\n\
+	str.hashMD5(${1:\"Hello World\"})\n\
 \n\
 snippet str.hashSHA1\n\
-	str.hashSHA1(${1:\"Hello World\"});\n\
+	str.hashSHA1(${1:\"Hello World\"})\n\
 \n\
 snippet str.htmlEncode\n\
-	str.htmlEncode(${1});\n\
+	str.htmlEncode(${1})\n\
 \n\
 snippet str.initCap\n\
-	str.initCap(${1});\n\
+	str.initCap(${1})\n\
 \n\
 snippet str.join\n\
 	str.join{\n\
 		/strings = ${1};\n\
 		/delimiter = ${2};\n\
-	};\n\
+	}\n\
 \n\
 snippet str.length\n\
-	str.length(${1:\"Hello World\"});\n\
+	str.length(${1:\"Hello World\"})\n\
 \n\
 snippet str.justify\n\
 	str.justify{\n\
@@ -341,20 +341,20 @@ snippet str.justify\n\
 		/length = ${2};\n\
 		/char = ${3};\n\
 		/type/center = ${4:true};\n\
-	};\n\
+	}\n\
 \n\
 snippet str.replace\n\
 	str.replace{\n\
 		/string = ${1:\"Hello World\"};\n\
 		/regex = ${3:\"World\"};\n\
 		/replacement = ${2:\"BXL\"};\n\
-	};\n\
+	}\n\
 \n\
 snippet str.split\n\
 	str.split{\n\
 		/string = ${1:\"Hello World\"};\n\
 		/regex = ${2:\" \"};\n\
-	};\n\
+	}\n\
 \n\
 snippet str.replaceParams\n\
 	str.replaceParams{\n\
@@ -362,41 +362,41 @@ snippet str.replaceParams\n\
 		/params{\n\
 			/${2:param} = ${3:\"world\"};\n\
 		};\n\
-	};\n\
+	}\n\
 \n\
 snippet str.substring\n\
 	str.substring{\n\
 		/string = ${1:\"Hello World\"};\n\
 		/beginIndex = ${2:0};\n\
 		/endIndex = ${3:4};\n\
-	};\n\
+	}\n\
 \n\
 snippet str.toLowerCase\n\
-	str.toLowerCase(${1:\"HELLO WORLD\"});\n\
+	str.toLowerCase(${1:\"HELLO WORLD\"})\n\
 \n\
 snippet str.toUpperCase\n\
-	str.toUpperCase(${1:\"hello world\"});\n\
+	str.toUpperCase(${1:\"hello world\"})\n\
 \n\
 snippet str.trim\n\
-	str.trim(${1:\"   hello world   \"});\n\
+	str.trim(${1:\"   hello world   \"})\n\
 \n\
 snippet str.startsWith\n\
 	str.startsWith{\n\
 		/string = ${1:\"Hello World\"};\n\
 		/prefix= ${2:\"Hell\"};\n\
-	};\n\
+	}\n\
 \n\
 # server agent\n\
 \n\
 snippet server.getParam\n\
-	server.getParam(${1});\n\
+	server.getParam(${1})\n\
 \n\
 snippet server.session\n\
 	server.session{\n\
 		/context[${1:in/urlContext}] = null;\n\
 		/operation = \"${2:read}\";\n\
 		/tree = ${3:tmp/tree};\n\
-	};\n\
+	}\n\
 \n\
 # ide agent\n\
 \n\
@@ -404,16 +404,16 @@ snippet ide.createInstance\n\
 	ide.createInstance{\n\
 		/typePath${1:app/meh} = null;\n\
 		/config = tmp/config; // optional\n\
-	};\n\
+	}\n\
 \n\
 snippet ide.getConfigType\n\
-	ide.getConfigType(${1:tmp/config});\n\
+	ide.getConfigType(${1:tmp/config})\n\
 \n\
 snippet ide.getModuleType\n\
-	ide.getModuleType(${1:tmp/config});\n\
+	ide.getModuleType(${1:tmp/config})\n\
 \n\
 snippet ide.isNewIde\n\
-	ide.isNewIde();\n\
+	ide.isNewIde()\n\
 \n\
 snippet ide.moduleInstanceOfPath\n\
 	ide.moduleInstanceOfPath{\n\
