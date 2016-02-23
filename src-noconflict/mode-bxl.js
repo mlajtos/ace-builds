@@ -796,7 +796,7 @@ var BxlCompletions = function() {
                 caption: key + (sub ? "/" : ""),
                 snippet: key + (sub ? "/" : ""),
                 meta: "bxl",
-                score: 100,
+                score: 1000,
                 completer_: {
                     insertMatch: function(editor, data) {
                         console.log("YAY!"); console.log(data);
