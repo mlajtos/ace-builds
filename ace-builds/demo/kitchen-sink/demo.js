@@ -1298,6 +1298,7 @@ var supportedModes = {
     Elm:         ["elm"],
     Erlang:      ["erl|hrl"],
     Forth:       ["frt|fs|ldr"],
+    Fortran:     ["f|f90"],
     FTL:         ["ftl"],
     Gcode:       ["gcode"],
     Gherkin:     ["feature"],
@@ -10685,12 +10686,15 @@ var AcePopup = function(parentNode) {
         var renderer = this.renderer;
         var maxH = renderer.$maxLines * lineHeight * 1.4;
         var top = pos.top + this.$borderSize;
-        if (top + maxH > screenHeight - lineHeight && !topdownOnly) {
+        var allowTopdown = top > screenHeight / 2 && !topdownOnly;
+        if (allowTopdown && top + lineHeight + maxH > screenHeight) {
+            renderer.$maxPixelHeight = top - 2 * this.$borderSize;
             el.style.top = "";
             el.style.bottom = screenHeight - top + "px";
             popup.isTopdown = false;
         } else {
             top += lineHeight;
+            renderer.$maxPixelHeight = screenHeight - top - 0.2 * lineHeight;
             el.style.top = top + "px";
             el.style.bottom = "";
             popup.isTopdown = true;
@@ -10860,7 +10864,7 @@ var Autocomplete = function() {
 (function() {
 
     this.$init = function() {
-        this.popup = new AcePopup(document.body || document.documentElement);
+        this.popup = new AcePopup(this.editor.container || document.body || document.documentElement);
         this.popup.on("click", function(e) {
             this.insertMatch();
             e.stop();
@@ -11157,8 +11161,9 @@ var Autocomplete = function() {
             tooltipNode.textContent = item.docText;
         }
 
-        if (!tooltipNode.parentNode)
-            document.body.appendChild(tooltipNode);
+        if (!tooltipNode.parentNode){
+            this.editor.container.appendChild(tooltipNode);
+        }
         var popup = this.popup;
         var rect = popup.container.getBoundingClientRect();
         tooltipNode.style.top = popup.container.style.top;

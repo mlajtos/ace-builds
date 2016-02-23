@@ -7,7 +7,7 @@ var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 var BxlHighlightRules = function() {
 
 
-	var docComment = "\\b(?:WARNING|FIXME|XXX|HACK|BUG|BARLA)\\b";
+	var docComment = "\\b(?:WARNING|FIXME|XXX|HACK|BUG|COMPENSATION|BARLA)\\b";
 	var docComment2 = "TODO";
 	var urlRegex = /https?:\/\/[^\s]+/;
 	var docMention = "@[a-zA-Z0-9]+";
@@ -16,10 +16,10 @@ var BxlHighlightRules = function() {
 	var keywordMapper = this.createKeywordMapper({
         "keyword": "this|super|root|forkey|forval",
         "keyword.control": "if|else|do|while|for|break|continue|switch|case|default|return|instanceof",
-        "variable.language": "loc|in|out|cfg|data|tmp|__init__|throw|try|catch|finally",
+        "variable.language": "loc|in|out|cfg|data|tmp|__init__|src|dest|throw|try|catch|finally",
         "variable.language.invalid.illegal": "env",
         "support.function": "log|warning|error|info|java|compile|exec|stack|trace",
-        "storage.type.support.function": "bool|int|long|float|double|string|date|time|dateTime|path",
+        "storage.type.support.function": "bool|int|long|decimal|float|double|string|date|time|dateTime|path",
         "constant.language": "null|NULL|empty|EMPTY",
         "constant.language.boolean": "true|false",
     }, "unknown");
@@ -49,18 +49,18 @@ var BxlHighlightRules = function() {
 			token : "constant.numeric", // number
 			regex : "[-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]\\d+)?)?(L|l|F|f|D|d|bd|BD)?\\b"
 		}, {
-			token : "identifier.tree", // tree paths // language.variable
-			regex : "(/[\\w]+)"
+			token : ["identifier.tree.separator", "identifier.tree"], // tree paths
+			regex : "(/)([\\w]+)"
 		}, {
 			token : "support.function.module", // module operation call
 			regex : "(\\$\\$?)",
 			next  : "operationCall"
 		}, {
 			token : "support.function.agent", // module operation call
-			regex : "(\\w+\\.)(\\w+)"
+			regex : "(\\w+)(\\.\\w+)+"
 		}, {
 			token : "keyword.operator",
-			regex : "=\\[\\]|!|%|\/|\\*|\\-|\\+|\\.|&|~|\\^|<<|>>|==|=|!=|<=|>=|>|<|&&|\\|\\||\\?|\\:"
+			regex : "=\\[\\]|!|%|\/|\\*|\\-|\\+|\\.|&|~|\\^|<<|>>|==|=|:=|!=|<=|>=|>|<|&&|\\|\\||\\?|\\:"
 		}, {
 			token : "lparen",
 			regex : "[[({]"
@@ -163,9 +163,9 @@ var BxlHighlightRules = function() {
 			token : keywordMapper,
 			regex : "[a-zA-Z_][a-zA-Z0-9_]*\\b"
 		}, {
-            token : "identifier.tree", // tree paths // language.variable
-			regex : "(/[\\w]+)"
-        }]
+			token : ["identifier.tree.separator", "identifier.tree"], // tree paths
+			regex : "(/)([\\w]+)"
+		}]
 	};
 
 };
@@ -713,8 +713,11 @@ var MatchingBraceOutdent = function() {};
 exports.MatchingBraceOutdent = MatchingBraceOutdent;
 });
 
-ace.define("ace/mode/bxl_completions",["require","exports","module"], function(require, exports, module) {
+ace.define("ace/mode/bxl_completions",["require","exports","module","ace/token_iterator"], function(require, exports, module) {
 "use strict";
+
+var TokenIterator = require("../token_iterator").TokenIterator;
+
 
 var BxlCompletions = function() {
 
@@ -722,34 +725,33 @@ var BxlCompletions = function() {
 
 (function() {
 
-    function index(obj,i) {
-        if (obj && obj.hasOwnProperty(i)) {
-            return obj[i]
+    function index(object, prop) {
+        if (object && object.hasOwnProperty(prop)) {
+            return object[prop]
         } else {
             return undefined
         }
-        
     }
 
     var demo = {
         "data": {
             "pattern": {
-                "name": "Meno patternu",
-                "attr": true,
+                "name": 0,
+                "attr": 0,
                 "items": {
                     "subitem": {
-                        "name": "meh",
-                        "value": 23
+                        "name": 0,
+                        "value": 0
                     }
                 }
             }
         },
         "cfg": {
-            "name": "something"
+            "name": 0
         },
-        "in": null,
+        "in": 0,
         "out": {
-            "output": null
+            "output": 0
         }
     };
 
@@ -757,72 +759,51 @@ var BxlCompletions = function() {
         demo = window.blox.__autocomplete__
     }
 
-    this.getCompletions = function(state, session, pos, prefix) { 
+    function isPathSeparator(token) {
+        return (token.type === "keyword.operator" || token.type === "identifier.tree.separator") && (token.value === "/");
+    }
 
-        var token = session.getTokenAt(pos.row, pos.column);
+    function isPathSegment(token) {
+        return (token.type === "identifier.tree" || token.type === "variable.language");
+    }
 
-        if (!token) {
-            return []
+    this.getCompletions = function(state, session, pos, prefix) {
+        var iterator = new TokenIterator(session, pos.row, pos.column);
+        var token = iterator.getCurrentToken();
+
+        var path = [];
+
+        if (token && isPathSegment(token)) {
+            token = iterator.stepBackward();
         }
 
-        var completions = [];
-        var tree, path, separator;
-
-        if (token.type === "keyword.operator" && token.value === "/") { // got path separator
-            separator = token.value;
-            var pos = {row: pos.row, column: token.start};
-            var token = session.getTokenAt(pos.row, pos.column);
+        while (token && (isPathSeparator(token) || isPathSegment(token))) {
+            if (isPathSegment(token)) {
+                path.unshift(token.value);
+            }
+            token = iterator.stepBackward();
         }
 
-        if (token.type === "identifier.tree") { // got path in some tree
-            path = token.value;
-            pos = {row: pos.row, column: token.start};
-            token = session.getTokenAt(pos.row, pos.column);
+        var subtree = path.reduce(index, demo);
+
+        if (!subtree) {
+            return [];
         }
 
-        if (token.type === "variable.language" && token.value !== "tmp") { // got cfg, data, in, out
-            tree = token.value;
-        }
-
-        tree = tree ? tree : "";
-        path = path ? path : "";
-        separator = separator ? separator : "";
-
-        var subtree = (tree + path).split('/').reduce(index, demo)
-        
-        if (typeof subtree === "undefined") {
-            var meh = (tree + path).split('/')
-            meh.pop()
-            var subtree = meh.reduce(index, demo)    
-        }
-
-        function traverse(o, func, path, score) {
-            if (typeof o === "object") {
-                for (var i in o) {
-                    path.push(i)
-                    score = score - 1
-                    func.apply(this, [i, o[i], path, score]);
-
-                    if (o[i] !== null && typeof(o[i]) === "object") {
-                        traverse(o[i], func, path, score);
+        var completions = Object.keys(subtree).map(function(key) {
+            var sub = (typeof subtree[key] === "object");
+            return {
+                caption: key + (sub ? "/" : ""),
+                snippet: key + (sub ? "/" : ""),
+                meta: "bxl",
+                score: 100,
+                completer_: {
+                    insertMatch: function(editor, data) {
+                        console.log("YAY!"); console.log(data);
                     }
-                    path.pop()
-                    score = score + 1
                 }
             }
-        }
-
-        var completions = []
-
-        traverse(subtree, function(k, v, p, s) {
-            var path = p.join("/")
-            completions.push({
-                caption: path,
-                snippet: path,
-                meta: "",
-                score: s,
-            })
-        }, [], 100);
+        });
 
         return completions;
     };
