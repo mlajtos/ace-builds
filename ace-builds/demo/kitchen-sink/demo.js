@@ -10786,8 +10786,7 @@ exports.parForEach = function(array, fn, callback) {
         });
     }
 };
-
-var ID_REGEX = /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/;
+var ID_REGEX = /[a-zA-Z_0-9\-\u00A2-\uFFFF]/;
 
 exports.retrievePrecedingIdentifier = function(text, pos, regex) {
     regex = regex || ID_REGEX;
@@ -10819,6 +10818,7 @@ exports.getCompletionPrefix = function (editor) {
     var prefix;
     editor.completers.forEach(function(completer) {
         if (completer.identifierRegexps) {
+            console.log("Got completion prefix regexp from completer");
             completer.identifierRegexps.forEach(function(identifierRegex) {
                 if (!prefix && identifierRegex)
                     prefix = this.retrievePrecedingIdentifier(line, pos.column, identifierRegex);

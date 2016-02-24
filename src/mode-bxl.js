@@ -52,12 +52,9 @@ var BxlHighlightRules = function() {
 			token : ["identifier.tree.separator", "identifier.tree"], // tree paths
 			regex : "(/)([\\w]+)"
 		}, {
-			token : "support.function.module", // module operation call
-			regex : "(\\$\\$?)",
-			next  : "operationCall"
-		}, {
-			token : "support.function.agent", // module operation call
-			regex : "(\\w+)(\\.\\w+)+"
+		    token : "support.function.module",
+		    regex : "\\$\\$?",
+		    push  : "operationCall"
 		}, {
 			token : "keyword.operator",
 			regex : "=\\[\\]|!|%|\/|\\*|\\-|\\+|\\.|&|~|\\^|<<|>>|==|=|:=|!=|<=|>=|>|<|&&|\\|\\||\\?|\\:"
@@ -67,6 +64,9 @@ var BxlHighlightRules = function() {
 		}, {
 			token : "rparen",
 			regex : "[\\])}]"
+		}, {
+			token : "support.function.agent", // module operation call
+			regex : "(\\w+)(\\.\\w+)+"
 		}, {
 			token : keywordMapper,
 			regex : "[a-zA-Z_][a-zA-Z0-9_]*\\b"
@@ -163,10 +163,11 @@ var BxlHighlightRules = function() {
 			token : keywordMapper,
 			regex : "[a-zA-Z_][a-zA-Z0-9_]*\\b"
 		}, {
-			token : ["identifier.tree.separator", "identifier.tree"], // tree paths
-			regex : "(/)([\\w]+)"
-		}]
+            include: "start"  
+        }]
 	};
+
+	this.normalizeRules();
 
 };
 
@@ -725,6 +726,8 @@ var BxlCompletions = function() {
 
 (function() {
 
+    this.identifierRegexps = [/[a-zA-Z_0-9\-\u00A2-\uFFFF]/];
+
     function index(object, prop) {
         if (object && object.hasOwnProperty(prop)) {
             return object[prop]
@@ -749,7 +752,7 @@ var BxlCompletions = function() {
         "cfg": {
             "name": 0
         },
-        "in": 0,
+        "in": {"expand":0,"type":{"tailor":0,"file":0}},
         "out": {
             "output": 0
         }
@@ -760,11 +763,16 @@ var BxlCompletions = function() {
     }
 
     function isPathSeparator(token) {
-        return (token.type === "keyword.operator" || token.type === "identifier.tree.separator") && (token.value === "/");
+        return (token.value === "/");
     }
 
     function isPathSegment(token) {
         return (token.type === "identifier.tree" || token.type === "variable.language");
+    }
+
+    this.getOperationCompletions = function(state, session, pos, prefix) {
+        var iterator = new TokenIterator(session, pos.row, pos.column);
+        var token = iterator.getCurrentToken();
     }
 
     this.getCompletions = function(state, session, pos, prefix) {
@@ -792,11 +800,12 @@ var BxlCompletions = function() {
 
         var completions = Object.keys(subtree).map(function(key) {
             var sub = (typeof subtree[key] === "object");
+            sub = false;
             return {
                 caption: key + (sub ? "/" : ""),
                 snippet: key + (sub ? "/" : ""),
                 meta: "bxl",
-                score: 1000,
+                score: Number.MAX_VALUE,
                 completer_: {
                     insertMatch: function(editor, data) {
                         console.log("YAY!"); console.log(data);
