@@ -770,40 +770,52 @@ var BxlCompletions = function() {
         return (token.type === "identifier.tree" || token.type === "variable.language");
     }
 
-    this.getOperationCompletions = function(state, session, pos, prefix) {
-        var iterator = new TokenIterator(session, pos.row, pos.column);
-        var token = iterator.getCurrentToken();
+    function isRootPath(token) {
+        return (token.type === "variable.language");
     }
 
     this.getCompletions = function(state, session, pos, prefix) {
+        var paths = this.getDynamicPaths(state, session, pos, prefix);
+        var obj = this.pathsToObject(paths);
+
+        demo["tmp"] = obj;
+
+
         var iterator = new TokenIterator(session, pos.row, pos.column);
         var token = iterator.getCurrentToken();
 
         var path = [];
+        var relativePath = false;
 
-        if (token && isPathSegment(token)) {
-            token = iterator.stepBackward();
+        if (token) {
+            if (isPathSegment(token)) {
+                token = iterator.stepBackward();
+            } else if (isPathSeparator(token)) {
+                relativePath = true; // possibility
+            }
         }
 
         while (token && (isPathSeparator(token) || isPathSegment(token))) {
             if (isPathSegment(token)) {
                 path.unshift(token.value);
             }
+
+            if (isRootPath(token)) {
+                relativePath = false;
+            }
             token = iterator.stepBackward();
         }
 
         var subtree = path.reduce(index, demo);
 
-        if (!subtree) {
+        if (!subtree || relativePath) {
             return [];
         }
 
         var completions = Object.keys(subtree).map(function(key) {
-            var sub = (typeof subtree[key] === "object");
-            sub = false;
             return {
-                caption: key + (sub ? "/" : ""),
-                snippet: key + (sub ? "/" : ""),
+                caption: key,
+                snippet: key,
                 meta: "bxl",
                 score: Number.MAX_VALUE,
                 completer_: {
@@ -816,6 +828,52 @@ var BxlCompletions = function() {
 
         return completions;
     };
+
+    this.getDynamicPaths = function(state, session, pos, prefix) {
+        var iterator = new TokenIterator(session, 0, 0);
+        var token = iterator.getCurrentToken();
+        var gotAbsolutePath = false;
+        var path = [];
+        var paths = [];
+
+        while (token) {
+            if (gotAbsolutePath) {
+                if (isPathSegment(token)) {
+                    path.push(token.value);
+                } else if (isPathSeparator(token)) {
+                } else {
+                    gotAbsolutePath = false;
+                    paths.push(path);
+                    path = [];
+                }
+            } else if (token.type === "variable.language" && token.value === "tmp") {
+                gotAbsolutePath = true;
+            }
+
+            token = iterator.stepForward();
+        }
+
+        return paths;
+    }
+
+    this.pathsToObject = function(paths) {
+        var obj = {};
+
+        paths.forEach(function(path){
+            var p = obj;
+            for (var i = 0; i < path.length; i++) {
+                    if (p.hasOwnProperty(path[i])) {
+                        p = p[path[i]];
+                    } else {
+                        p[path[i]] = {};
+                        p = p[path[i]];
+                    }
+                    
+                }    
+        });
+
+        return obj;
+    }
 
 }).call(BxlCompletions.prototype);
 

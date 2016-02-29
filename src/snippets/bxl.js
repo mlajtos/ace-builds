@@ -398,6 +398,16 @@ snippet server.session\n\
 		/tree = ${3:tmp/tree};\n\
 	}\n\
 \n\
+# lang agent\n\
+\n\
+snippet java\n\
+	java{\n\
+		/class = \"${1:sk.jumpsoft.blox.extension.ExtensionPackage.ExtensionClass}\";\n\
+		/input{\n\
+			/parameter = ${2:\"value\"};\n\
+		};\n\
+	}\n\
+\n\
 # ide agent\n\
 \n\
 snippet ide.createInstance\n\
