@@ -969,17 +969,17 @@ var BxlCompletions = function() {
 
                 if (token && token.type === "support.function.module" && token.value === "$") {
                     var completions = Object.keys(operations).map(function(key) {
-                        var inConstraints = Object.keys(operations[key].in).map(function(key) {
+                        var inConstraints = operations[key].hasOwnProperty("in") ? Object.keys(operations[key].in).map(function(key) {
                             return "&nbsp;/" + key + "<br>"
-                        }).join("");
+                        }).join("") : "";
 
                         if (inConstraints !== "") {
                             inConstraints = "<hr><i>Input Constraints:</i><br>" + inConstraints
                         }
 
-                        var outConstraints = Object.keys(operations[key].out).map(function(key) {
+                        var outConstraints = operations[key].hasOwnProperty("out") ? Object.keys(operations[key].out).map(function(key) {
                             return "&nbsp;/" + key + "<br>"
-                        }).join("");
+                        }).join("") : "";
 
                         if (outConstraints !== "") {
                             outConstraints = "<hr><i>Output Constraints:</i><br>" + outConstraints
