@@ -1821,8 +1821,7 @@ var snippetCompleter = {
         }
     }
 };
-
-var completers = [snippetCompleter, textCompleter, keyWordCompleter];
+var completers = [snippetCompleter, keyWordCompleter];
 exports.setCompleters = function(val) {
     completers.length = 0;
     if (val) completers.push.apply(completers, val);
@@ -1878,22 +1877,23 @@ var loadSnippetFile = function(id) {
 
 var doLiveAutocomplete = function(e) {
     var editor = e.editor;
-    var hasCompleter = editor.completer && editor.completer.activated;
+    var hasCompleter = editor.completer;
     if (e.command.name === "backspace") {
-        if (hasCompleter && !util.getCompletionPrefix(editor))
+        if (hasCompleter && !util.getCompletionPrefix(editor)) {
             editor.completer.detach();
+        }
     }
     else if (e.command.name === "insertstring") {
         var prefix = util.getCompletionPrefix(editor);
-        if (prefix && !hasCompleter) {
+        if (!hasCompleter) {
             if (!editor.completer) {
                 editor.completer = new Autocomplete();
             }
+        } else if (prefix) {
             editor.completer.autoInsert = false;
             editor.completer.showPopup(editor);
-        } else {
-            console.log("Don't have prefix, not autocompleting.")
         }
+
     }
 };
 

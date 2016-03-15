@@ -392,10 +392,14 @@ snippet server.getParam\n\
 	server.getParam(${1})\n\
 \n\
 snippet server.session\n\
-	server.session{\n\
+	server.session.read{\n\
 		/context[${1:in/urlContext}] = null;\n\
-		/operation = \"${2:read}\";\n\
-		/tree = ${3:tmp/tree};\n\
+	}\n\
+\n\
+snippet server.session.write\n\
+	server.session.write{\n\
+		/context[${1:in/urlContext}] = null;\n\
+		/tree = ${2:tmp/tree};\n\
 	}\n\
 \n\
 # lang agent\n\
@@ -497,9 +501,11 @@ snippet $\n\
 \n\
 snippet formMessage\n\
 	{\n\
-		/type/${1:\"warning\"} = null;\n\
-		/message = ${2:\"message\"};\n\
-		/reasons = ${3:\"reasons\"};\n\
+		/type/${1:warning} = null;\n\
+		/message = ${2:\"Message goes here.\"};\n\
+		/reasons[]{\n\
+			/message = ${3:\"Optional reason goes here.\"}\n\
+		};\n\
 	}";
 exports.scope = "bxl";
 

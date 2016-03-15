@@ -736,34 +736,8 @@ var BxlCompletions = function() {
         }
     }
 
-    var demo = {
-        "data": {
-            "pattern": {
-                "name": 0,
-                "attr": 0,
-                "items": {
-                    "subitem": {
-                        "name": 0,
-                        "value": 0
-                    }
-                }
-            }
-        },
-        "cfg": {
-            "name": 0
-        },
-        "in": {"expand":0,"type":{"tailor":0,"file":0}},
-        "out": {
-            "output": 0
-        }
-    };
-
-    if (window.blox && window.blox.__autocomplete__) {
-        demo = window.blox.__autocomplete__
-    }
-
     function isPathSeparator(token) {
-        return (token.value === "/");
+        return (token.value === "/" && token.type !== "comment.line");
     }
 
     function isPathSegment(token) {
@@ -774,13 +748,13 @@ var BxlCompletions = function() {
         return (token.type === "variable.language");
     }
 
-    this.getCompletions = function(state, session, pos, prefix) {
-        var paths = this.getDynamicPaths(state, session, pos, prefix);
-        var obj = this.pathsToObject(paths);
+    this.getCompletions = function(editor, session, pos, prefix, callback) {
+        this.getKeywordCompletions(editor, session, pos, prefix, callback);
+        this.getPathsCompletions(editor, session, pos, prefix, callback);
+        this.getOperationCompletions(editor, session, pos, prefix, callback);
+    }
 
-        demo["tmp"] = obj;
-
-
+    this.getPathsCompletions = function(editor, session, pos, prefix, callback) {
         var iterator = new TokenIterator(session, pos.row, pos.column);
         var token = iterator.getCurrentToken();
 
@@ -806,57 +780,102 @@ var BxlCompletions = function() {
             token = iterator.stepBackward();
         }
 
-        var subtree = path.reduce(index, demo);
+        var staticPaths = getStaticPathsForCompletions();
+        var dynamicPaths = getDynamicPathsForCompletion(session);
 
-        if (!subtree || relativePath) {
-            return [];
+        var staticSubtree = path.reduce(index, staticPaths);
+        var dynamicSubtree = path.reduce(index, dynamicPaths);
+
+        if (staticSubtree || relativePath) {
+            var completions = Object.keys(staticSubtree).map(function(key) {
+                return {
+                    caption: key,
+                    snippet: key,
+                    meta: "id",
+                    score: 800
+                }
+            });
+
+            callback(null, completions);
         }
 
-        var completions = Object.keys(subtree).map(function(key) {
-            return {
-                caption: key,
-                snippet: key,
-                meta: "bxl",
-                score: Number.MAX_VALUE,
-                completer_: {
-                    insertMatch: function(editor, data) {
-                        console.log("YAY!"); console.log(data);
-                    }
+        if (dynamicSubtree || relativePath) {
+            var completions = Object.keys(dynamicSubtree).map(function(key) {
+                return {
+                    caption: key,
+                    snippet: key,
+                    meta: "id",
+                    score: 900
                 }
-            }
-        });
+            });
 
-        return completions;
+            callback(null, completions);
+        }
     };
 
-    this.getDynamicPaths = function(state, session, pos, prefix) {
+    function getStaticPathsForCompletions() {
+        var demo = {
+            "data": {
+                "pattern": {
+                    "name": 0,
+                    "attr": 0,
+                    "items": {
+                        "subitem": {
+                            "name": 0,
+                            "value": 0
+                        }
+                    }
+                }
+            },
+            "cfg": {
+                "name": 0
+            },
+            "in": {"expand":0,"type":{"tailor":0,"file":0}},
+            "out": {
+                "output": 0
+            }
+        };
+
+        if (window.blox && window.blox.__autocomplete__) {
+            var obj = window.blox.__autocomplete__
+        } else {
+            var obj = demo;
+        }
+
+        return obj;
+    }
+
+    function getDynamicPathsForCompletion(session) {
         var iterator = new TokenIterator(session, 0, 0);
         var token = iterator.getCurrentToken();
-        var gotAbsolutePath = false;
+        var gotTreeIdentifier = false;
         var path = [];
         var paths = [];
 
         while (token) {
-            if (gotAbsolutePath) {
+            if (gotTreeIdentifier) {
                 if (isPathSegment(token)) {
                     path.push(token.value);
                 } else if (isPathSeparator(token)) {
                 } else {
-                    gotAbsolutePath = false;
+                    gotTreeIdentifier = false;
                     paths.push(path);
                     path = [];
                 }
-            } else if (token.type === "variable.language" && token.value === "tmp") {
-                gotAbsolutePath = true;
+            } else {
+                if (isRootPath(token)) {
+                    gotTreeIdentifier = true;
+                    path.push(token.value);
+                }
             }
 
             token = iterator.stepForward();
         }
 
-        return paths;
+        return pathsToObject(paths);
     }
 
-    this.pathsToObject = function(paths) {
+    function pathsToObject(paths) {
         var obj = {};
 
         paths.forEach(function(path){
@@ -873,6 +892,124 @@ var BxlCompletions = function() {
         });
 
         return obj;
+    }
+
+    this.getKeywordCompletions = function(editor, session, pos, prefix, callback) {
+        var completions = session.$mode.$keywordList.map(function(word) {
+            return {
+                caption: word,
+                snippet: word,
+                score: 500,
+                meta: "keyword"
+            };
+        });
+
+        callback(null, completions);
+    }
+
+    this.getOperationList = function() {
+        var operations = {
+            "getDisplayContent": {
+                "in": {
+                    "urlPath": 0,
+                    "urlContext": 0,
+                    "paramTree": 0,
+                    "sessionTree": 0,
+                    "attrKey": 0,
+                    "attrData": 0,
+                    "rowData": 0,
+                    "rowErrors": 0
+                },
+                "out": {
+                    "content": 0,
+                    "attrData": 0,
+                    "rowData": 0,
+                    "rowErrors": 0
+                }
+            },
+            "getEditContent": {
+                "in": {},
+                "out": {}
+            },
+            "getHiddenContent": {
+                "in": {},
+                "out": {}
+            },
+            "_getContent": {
+                "in": {},
+                "out": {}
+            }
+        };
+
+        if (window.blox && window.blox.__autocomplete__ && window.blox.__autocomplete__.this) {
+            var obj = window.blox.__autocomplete__.this
+        } else {
+            var obj = operations;
+        }
+
+        return obj;
+    }
+
+
+    this.getOperationCompletions = function(editor, session, pos, prefix, callback) {
+        var operations = this.getOperationList();
+
+        var iterator = new TokenIterator(session, pos.row, pos.column);
+        var token = iterator.getCurrentToken();
+
+        if (token && token.type === "support.function.operation") {
+            token = iterator.stepBackward();
+        }
+
+        if (token && token.type === "keyword.operator" && token.value === ".") {
+            token = iterator.stepBackward();
+
+            if (token && token.type === "keyword" && token.value === "this") {
+                token = iterator.stepBackward();
+
+                if (token && token.type === "support.function.module" && token.value === "$") {
+                    var completions = Object.keys(operations).map(function(key) {
+                        var inConstraints = Object.keys(operations[key].in).map(function(key) {
+                            return "&nbsp;/" + key + "<br>"
+                        }).join("");
+
+                        if (inConstraints !== "") {
+                            inConstraints = "<hr><i>Input Constraints:</i><br>" + inConstraints
+                        }
+
+                        var outConstraints = Object.keys(operations[key].out).map(function(key) {
+                            return "&nbsp;/" + key + "<br>"
+                        }).join("");
+
+                        if (outConstraints !== "") {
+                            outConstraints = "<hr><i>Output Constraints:</i><br>" + outConstraints
+                        }
+
+                        if (inConstraints !== "" && outConstraints !== "") {
+                            var operationTitle = "Operation <b>" + key + "</b>"
+                        } else {
+                            var operationTitle = "";
+                        }
+
+                        if (operationTitle !== "") {
+                            var docHTML = operationTitle + inConstraints + outConstraints;
+                        } else {
+                            docHTML = null
+                        }
+
+                        return {
+                            caption: key,
+                            snippet: key,
+                            meta: "operation",
+                            docHTML: docHTML,
+                            score: 1000
+                        }
+                    });
+
+                    callback(null, completions);
+                }
+            }
+        }
     }
 
 }).call(BxlCompletions.prototype);
@@ -896,7 +1033,10 @@ var Mode = function() {
     this.foldingRules = new FoldMode();
     this.$behaviour = new CstyleBehaviour();
     this.$outdent = new MatchingBraceOutdent();
-    this.$completer = new BxlCompletions();
+    this.completer = new BxlCompletions();
+
+    var highlighter = new BxlHighlightRules();
+    this.$keywordList = highlighter.$keywordList;
 };
 oop.inherits(Mode, TextMode);
 
@@ -904,11 +1044,6 @@ oop.inherits(Mode, TextMode);
 
     this.lineCommentStart = "//";
     this.blockComment = {start: "/*", end: "*/"};
-
-
-    this.getCompletions = function(state, session, pos, prefix) {
-        return this.$completer.getCompletions(state, session, pos, prefix);
-    };
 
 	this.createWorker = function(session) {
         var worker = new WorkerClient(["ace"], "ace/mode/bxl_worker", "BxlWorker");
