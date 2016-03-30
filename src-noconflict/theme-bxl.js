@@ -103,7 +103,8 @@ pointer-events: auto;\
 }\
 body.dark .ace-bxl .ace_gutter {\
 background: #31373F;\
-color: #8F908A\
+color: #8F908A;\
+border-right: 1px solid #8c8c8c;\
 }\
 body.dark .ace-bxl .ace_print-margin {\
 width: 1px;\
@@ -206,6 +207,10 @@ background-color: #515256;\
 }\
 body.dark .ace-bxl .ace_editor.ace_autocomplete .ace_completion-highlight{\
 color: #CEC107;\
+}\
+body.dark .ace-bxl .ace_indent-guide {\
+border-right: none;\
+margin-right: 0;\
 }";
 
 var dom = require("../lib/dom");
