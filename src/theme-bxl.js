@@ -110,7 +110,7 @@ width: 1px;\
 background: #555651\
 }\
 body.dark .ace-bxl {\
-background-color: #272822;\
+background-color: #272B30;\
 color: #F8F8F2\
 }\
 body.dark .ace-bxl .ace_cursor {\
