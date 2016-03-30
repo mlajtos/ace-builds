@@ -10,6 +10,7 @@ color: #8F908A;\
 border-radius: 4px;\
 background-color: white;\
 margin-bottom: 1em;\
+color: black;\
 }\
 .ace-bxl .ace_cursor {\
 color: #666666;\
