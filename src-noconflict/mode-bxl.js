@@ -753,13 +753,12 @@ var BxlCompletions = function() {
         this.getPathsCompletions(editor, session, pos, prefix, callback);
         this.getOperationCompletions(editor, session, pos, prefix, callback);
     }
-
     this.getPathsCompletions = function(editor, session, pos, prefix, callback) {
         var iterator = new TokenIterator(session, pos.row, pos.column);
         var token = iterator.getCurrentToken();
 
         var path = [];
-        var relativePath = false;
+        var relativePath = true;
 
         if (token) {
             if (isPathSegment(token)) {
@@ -786,7 +785,7 @@ var BxlCompletions = function() {
         var staticSubtree = path.reduce(index, staticPaths);
         var dynamicSubtree = path.reduce(index, dynamicPaths);
 
-        if (staticSubtree || relativePath) {
+        if (staticSubtree && !relativePath) {
             var completions = Object.keys(staticSubtree).map(function(key) {
                 return {
                     caption: key,
@@ -799,7 +798,7 @@ var BxlCompletions = function() {
             callback(null, completions);
         }
 
-        if (dynamicSubtree || relativePath) {
+        if (dynamicSubtree && !relativePath) {
             var completions = Object.keys(dynamicSubtree).map(function(key) {
                 return {
                     caption: key,
