@@ -11437,7 +11437,7 @@ var loadSnippetFile = function(id) {
 
 var doLiveAutocomplete = function(e) {
     var editor = e.editor;
-    var hasCompleter = editor.completer;
+    var hasCompleter = editor.completer && editor.completer.activated;
     if (e.command.name === "backspace") {
         if (hasCompleter && !util.getCompletionPrefix(editor)) {
             editor.completer.detach();
