@@ -397,6 +397,7 @@ var BxlCompletions = function() {
         var operations = this.getOperationCompletions(editor, session, pos, prefix);
 
         var completions = [].concat(keywords, paths, operations);
+
         callback(null, completions);
     }
     this.getPathsCompletions = function(editor, session, pos, prefix) {
@@ -456,6 +457,8 @@ var BxlCompletions = function() {
 
             return completions;
         }
+
+        return [];
     };
 
     function getStaticPathsForCompletions() {
