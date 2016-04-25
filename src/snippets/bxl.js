@@ -245,7 +245,7 @@ snippet tree.keyPos\n\
 snippet tree.keysDelete\n\
 	tree.keysDelete{\n\
 		/tree = ${1};\n\
-		/keys = {\n\
+		/keys{\n\
 			${2}\n\
 		};\n\
 	}\n\
@@ -253,9 +253,7 @@ snippet tree.keysDelete\n\
 snippet tree.pathDelete\n\
 	tree.pathDelete{\n\
 		/tree = ${1};\n\
-		/path = {\n\
-			${2}\n\
-		};\n\
+		/path = ${2};\n\
 	}\n\
 \n\
 snippet tree.reverse\n\

@@ -9,7 +9,6 @@ color: #8F908A;\
 .ace-bxl.ace_editor{\
 border-radius: 4px;\
 background-color: white;\
-margin-bottom: 1em;\
 color: black;\
 }\
 .ace-bxl .ace_cursor {\

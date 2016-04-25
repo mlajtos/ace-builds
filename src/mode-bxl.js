@@ -392,11 +392,14 @@ var BxlCompletions = function() {
     }
 
     this.getCompletions = function(editor, session, pos, prefix, callback) {
-        this.getKeywordCompletions(editor, session, pos, prefix, callback);
-        this.getPathsCompletions(editor, session, pos, prefix, callback);
-        this.getOperationCompletions(editor, session, pos, prefix, callback);
+        var keywords = this.getKeywordCompletions(editor, session, pos, prefix);
+        var paths = this.getPathsCompletions(editor, session, pos, prefix);
+        var operations = this.getOperationCompletions(editor, session, pos, prefix);
+
+        var completions = [].concat(keywords, paths, operations);
+        callback(null, completions);
     }
-    this.getPathsCompletions = function(editor, session, pos, prefix, callback) {
+    this.getPathsCompletions = function(editor, session, pos, prefix) {
         var iterator = new TokenIterator(session, pos.row, pos.column);
         var token = iterator.getCurrentToken();
 
@@ -423,7 +426,7 @@ var BxlCompletions = function() {
         }
 
         var staticPaths = getStaticPathsForCompletions();
-        var dynamicPaths = getDynamicPathsForCompletion(session);
+        var dynamicPaths = getDynamicPathsForCompletion(editor, session, pos);
 
         var staticSubtree = path.reduce(index, staticPaths);
         var dynamicSubtree = path.reduce(index, dynamicPaths);
@@ -438,7 +441,7 @@ var BxlCompletions = function() {
                 }
             });
 
-            callback(null, completions);
+            return completions;
         }
 
         if (dynamicSubtree && !relativePath) {
@@ -451,7 +454,7 @@ var BxlCompletions = function() {
                 }
             });
 
-            callback(null, completions);
+            return completions;
         }
     };
 
@@ -487,7 +490,9 @@ var BxlCompletions = function() {
         return obj;
     }
 
-    function getDynamicPathsForCompletion(session) {
+    function getDynamicPathsForCompletion(editor, session, position) {
+        var currentToken = session.getTokenAt(position.row, position.column);
+
         var iterator = new TokenIterator(session, 0, 0);
         var token = iterator.getCurrentToken();
         var gotTreeIdentifier = false;
@@ -497,7 +502,9 @@ var BxlCompletions = function() {
         while (token) {
             if (gotTreeIdentifier) {
                 if (isPathSegment(token)) {
-                    path.push(token.value);
+                    if (currentToken !== token) {
+                        path.push(token.value);
+                    }
                 } else if (isPathSeparator(token)) {
                 } else {
                     gotTreeIdentifier = false;
@@ -536,7 +543,7 @@ var BxlCompletions = function() {
         return obj;
     }
 
-    this.getKeywordCompletions = function(editor, session, pos, prefix, callback) {
+    this.getKeywordCompletions = function(editor, session, pos, prefix) {
         var completions = session.$mode.$keywordList.map(function(word) {
             return {
                 caption: word,
@@ -546,7 +553,7 @@ var BxlCompletions = function() {
             };
         });
 
-        callback(null, completions);
+        return completions;
     }
 
     this.getOperationList = function() {
@@ -593,7 +600,7 @@ var BxlCompletions = function() {
     }
 
 
-    this.getOperationCompletions = function(editor, session, pos, prefix, callback) {
+    this.getOperationCompletions = function(editor, session, pos, prefix) {
         var operations = this.getOperationList();
 
         var iterator = new TokenIterator(session, pos.row, pos.column);
@@ -648,7 +655,7 @@ var BxlCompletions = function() {
                         }
                     });
 
-                    callback(null, completions);
+                    return completions;
                 }
             }
         }
