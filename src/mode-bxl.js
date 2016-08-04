@@ -395,8 +395,9 @@ var BxlCompletions = function() {
         var keywords = this.getKeywordCompletions(editor, session, pos, prefix);
         var paths = this.getPathsCompletions(editor, session, pos, prefix);
         var operations = this.getOperationCompletions(editor, session, pos, prefix);
+        var agents = this.getAgentsCompletions(editor, session, pos, prefix);
 
-        var completions = [].concat(keywords, paths, operations);
+        var completions = [].concat(keywords, paths, operations, agents);
 
         callback(null, completions);
     }
@@ -662,6 +663,10 @@ var BxlCompletions = function() {
                 }
             }
         }
+    }
+
+    this.getAgentsCompletions = function(editor, session, pos, prefix) {
+        return [];
     }
 
 }).call(BxlCompletions.prototype);
