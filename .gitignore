@@ -1,6 +1,7 @@
 .gitignore
 ChangeLog.txt
 src
+src-min
 src-noconflict
 src-min-noconflict
 demo
